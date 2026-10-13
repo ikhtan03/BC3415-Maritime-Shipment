@@ -42,6 +42,16 @@ Dangerous goods require particular care: errors in shipment information can trig
 | **Uneven case complexity** | Not every discrepancy warrants the same response. | Risk-based flags and human escalation. |
 | **Repetitive reporting** | Reviewers need to communicate what is wrong and why. | Evidence-linked compliance pre-check summaries. |
 
+<p align="center">
+  <img src="canva/2.png" alt="Maritime Dangerous Goods Business Challenges" width="850">
+</p>
+<p align="center">
+  <img src="canva/3.png" alt="Maritime Dangerous Goods Business Challenges" width="850">
+</p>
+<p align="center">
+  <img src="canva/4.png" alt="Maritime Dangerous Goods Business Challenges" width="850">
+</p>
+
 ### Intended users
 
 - **Primary:** Freight forwarders and shipping documentation officers conducting pre-submission reviews.
