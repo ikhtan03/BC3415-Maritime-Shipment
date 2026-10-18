@@ -1,7 +1,0 @@
-case_id,pdf_count,injected_issues,folder
-S01_correct,4,0,test_cases/S01_correct
-S02_weight_mismatch,4,1,test_cases/S02_weight_mismatch
-S03_container_mismatch,4,1,test_cases/S03_container_mismatch
-S04_missing_dgd,3,1,test_cases/S04_missing_dgd
-S05_dg_class_conflict,4,1,test_cases/S05_dg_class_conflict
-S06_multiple_errors,4,3,test_cases/S06_multiple_errors
