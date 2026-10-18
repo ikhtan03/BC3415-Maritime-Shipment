@@ -1,0 +1,16 @@
+{
+  "case_id": "S02_weight_mismatch",
+  "expected_findings": [
+    {
+      "finding_type": "weight_mismatch",
+      "affected_document": "packing_list",
+      "affected_field": "gross_cargo_weight_kg",
+      "expected_action": "verify_or_correct_documents",
+      "expected_value": 18500,
+      "injected_value": 19500
+    }
+  ],
+  "expected_issue_count": 1,
+  "regulatory_checks": [],
+  "regulatory_note": "Regulatory verdicts are NOT labelled. MPA PSA DG arrival notification and Customs import permits are separate external processes; the four PDFs alone cannot demonstrate their completion. Member 2 must confirm any source-specific checks."
+}
