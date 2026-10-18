@@ -1,5 +1,0 @@
-Suggested project-video scope statement (about 20 seconds):
-
-"For this academic prototype, we focus specifically on containerised packaged dangerous-goods imports arriving at a PSA terminal in Singapore. We test pre-submission consistency across four shipping document types: the Bill of Lading, Commercial Invoice, Packing List, and Dangerous Goods Declaration. Our synthetic dataset includes deliberately injected errors to measure extraction and validation. The system is a human-in-the-loop pre-check assistant, not a platform for filing declarations, issuing permits, or granting regulatory clearance."
-
-When showing the demo, explain that MPA's PSA-handled vessel DG notification is an external process using PORTNET. Missing one uploaded DGD file is not equivalent to missing the MPA notification. The demo does not evidence submission timing, Customs TradeNet permits, or PSA storage approval.
