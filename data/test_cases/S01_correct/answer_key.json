@@ -1,0 +1,7 @@
+{
+  "case_id": "S01_correct",
+  "expected_findings": [],
+  "expected_issue_count": 0,
+  "regulatory_checks": [],
+  "regulatory_note": "Regulatory verdicts are NOT labelled. MPA PSA DG arrival notification and Customs import permits are separate external processes; the four PDFs alone cannot demonstrate their completion. Member 2 must confirm any source-specific checks."
+}
