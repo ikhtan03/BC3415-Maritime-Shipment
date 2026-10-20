@@ -4,7 +4,7 @@
 
 **Academic pre-check of containerised packaged dangerous-goods imports into Singapore through PSA.** Not a Customs permit, MPA/PSA notification, legal compliance decision or regulatory approval.
 
-## Dataset (unchanged PDFs; expanded answer keys)
+## Dataset 
 
 **6 test cases · 23 PDFs · 6 ground-truth JSONs · 6 answer-key JSONs · 2 verification fixtures**
 
