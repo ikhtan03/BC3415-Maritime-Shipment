@@ -3,5 +3,42 @@
   "expected_findings": [],
   "expected_issue_count": 0,
   "regulatory_checks": [],
-  "regulatory_note": "Regulatory verdicts are NOT labelled. MPA PSA DG arrival notification and Customs import permits are separate external processes; the four PDFs alone cannot demonstrate their completion. Member 2 must confirm any source-specific checks."
+  "regulatory_note": "Regulatory verdicts are NOT labelled. MPA PSA DG arrival notification and Customs import permits are separate external processes; the four PDFs alone cannot demonstrate their completion. Member 2 must confirm any source-specific checks.",
+  "verification_expectations": {
+    "trigger": "when_initial_rules_return_findings",
+    "max_rounds": 2,
+    "checks": [],
+    "expected_remaining_issue_types": [],
+    "note": "Expected results assume correct initial extraction. A separate mock test covers false positives from extraction errors."
+  },
+  "rag_planning_expectations": {
+    "query_inputs": [
+      "movement_type",
+      "terminal",
+      "port_of_discharge",
+      "un_number",
+      "proper_shipping_name",
+      "dg_class"
+    ],
+    "suggested_topics": [
+      "Singapore PSA containerised packaged DG import documentation",
+      "MPA dangerous goods vessel arrival declaration scope and submission",
+      "Singapore Customs import permit and controlled goods applicability"
+    ],
+    "conditional_topics": [],
+    "expected_authoritative_sources": [
+      "MPA declaring dangerous goods",
+      "Singapore Customs import procedures",
+      "Singapore Customs controlled and prohibited goods"
+    ],
+    "verified_rule_ids": [],
+    "expected_regulatory_verdict": null,
+    "note": "Suggested search topics, not mandated literal query strings or verified regulatory conclusions. RAG evaluation needs source-specific gold labels from regulatory research."
+  },
+  "triage_expectations": {
+    "policy_version": "prototype-v1 (illustrative)",
+    "suggested_priority": "low",
+    "human_review_recommended": false,
+    "note": "Prototype triage recommendation, not legally defined classification. All findings warrant verification; the absence of injected discrepancies is not a compliance clearance."
+  }
 }
