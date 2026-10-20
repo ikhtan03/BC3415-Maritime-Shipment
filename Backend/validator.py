@@ -113,7 +113,7 @@ def main():
         raise SystemExit(0 if evaluate_cases(args.test) else 1)
     obj = json.loads(args.input.read_text(encoding='utf-8'))
     # Allow direct mapping or a ground_truth-style wrapper for local development.
-    documents = obj.get('document_truth', obj)
+    documents = obj.get('document_truth', obj.get('documents', obj))
     print(json.dumps(validate(documents), indent=2))
 
 
