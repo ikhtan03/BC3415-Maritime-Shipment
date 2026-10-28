@@ -1,0 +1,110 @@
+{
+  "project": "PortDoc AI",
+  "generated_at_utc": "2026-10-27T10:12:15.913965+00:00",
+  "input": {
+    "pdf_folder": "C:\\Users\\ikhta\\OneDrive\\Documents\\EUR\\Year 4\\Exchange\\BC3415 AI in Accounting & Finance\\Maritime Group Project\\BC3415-Maritime-Shipment\\data\\test_cases\\S05_dg_class_conflict",
+    "uploaded_pdf_count": 4,
+    "identified_pdf_count": 4,
+    "extracted_document_count": 0
+  },
+  "extraction": {
+    "upload_inventory": [
+      {
+        "filename": "bill_of_lading.pdf",
+        "path": "C:\\Users\\ikhta\\OneDrive\\Documents\\EUR\\Year 4\\Exchange\\BC3415 AI in Accounting & Finance\\Maritime Group Project\\BC3415-Maritime-Shipment\\data\\test_cases\\S05_dg_class_conflict\\bill_of_lading.pdf",
+        "document_type": "bill_of_lading",
+        "status": "extraction_failed",
+        "error": "[WinError 10054] An existing connection was forcibly closed by the remote host"
+      },
+      {
+        "filename": "commercial_invoice.pdf",
+        "path": "C:\\Users\\ikhta\\OneDrive\\Documents\\EUR\\Year 4\\Exchange\\BC3415 AI in Accounting & Finance\\Maritime Group Project\\BC3415-Maritime-Shipment\\data\\test_cases\\S05_dg_class_conflict\\commercial_invoice.pdf",
+        "document_type": "commercial_invoice",
+        "status": "extraction_failed",
+        "error": "[Errno 11001] getaddrinfo failed"
+      },
+      {
+        "filename": "dangerous_goods_declaration.pdf",
+        "path": "C:\\Users\\ikhta\\OneDrive\\Documents\\EUR\\Year 4\\Exchange\\BC3415 AI in Accounting & Finance\\Maritime Group Project\\BC3415-Maritime-Shipment\\data\\test_cases\\S05_dg_class_conflict\\dangerous_goods_declaration.pdf",
+        "document_type": "dangerous_goods_declaration",
+        "status": "extraction_failed",
+        "error": "[Errno 11001] getaddrinfo failed"
+      },
+      {
+        "filename": "packing_list.pdf",
+        "path": "C:\\Users\\ikhta\\OneDrive\\Documents\\EUR\\Year 4\\Exchange\\BC3415 AI in Accounting & Finance\\Maritime Group Project\\BC3415-Maritime-Shipment\\data\\test_cases\\S05_dg_class_conflict\\packing_list.pdf",
+        "document_type": "packing_list",
+        "status": "extraction_failed",
+        "error": "[Errno 11001] getaddrinfo failed"
+      }
+    ],
+    "extraction_metadata": {
+      "bill_of_lading.pdf": {
+        "source_pdf": "bill_of_lading.pdf",
+        "document_type": "bill_of_lading",
+        "status": "extraction_failed",
+        "error": "[WinError 10054] An existing connection was forcibly closed by the remote host"
+      },
+      "commercial_invoice.pdf": {
+        "source_pdf": "commercial_invoice.pdf",
+        "document_type": "commercial_invoice",
+        "status": "extraction_failed",
+        "error": "[Errno 11001] getaddrinfo failed"
+      },
+      "dangerous_goods_declaration.pdf": {
+        "source_pdf": "dangerous_goods_declaration.pdf",
+        "document_type": "dangerous_goods_declaration",
+        "status": "extraction_failed",
+        "error": "[Errno 11001] getaddrinfo failed"
+      },
+      "packing_list.pdf": {
+        "source_pdf": "packing_list.pdf",
+        "document_type": "packing_list",
+        "status": "extraction_failed",
+        "error": "[Errno 11001] getaddrinfo failed"
+      }
+    },
+    "extraction_output_file": "C:\\Users\\ikhta\\OneDrive\\Documents\\EUR\\Year 4\\Exchange\\BC3415 AI in Accounting & Finance\\Maritime Group Project\\BC3415-Maritime-Shipment\\outputs\\S05\\extracted_documents.json"
+  },
+  "validation": {
+    "findings": [
+      {
+        "finding_type": "missing_document",
+        "affected_document": "bill_of_lading",
+        "affected_field": null,
+        "expected_action": "verify_or_correct_documents",
+        "explanation": "bill_of_lading is missing from the expected upload set."
+      },
+      {
+        "finding_type": "missing_document",
+        "affected_document": "commercial_invoice",
+        "affected_field": null,
+        "expected_action": "verify_or_correct_documents",
+        "explanation": "commercial_invoice is missing from the expected upload set."
+      },
+      {
+        "finding_type": "missing_document",
+        "affected_document": "packing_list",
+        "affected_field": null,
+        "expected_action": "verify_or_correct_documents",
+        "explanation": "packing_list is missing from the expected upload set."
+      },
+      {
+        "finding_type": "missing_document",
+        "affected_document": "dangerous_goods_declaration",
+        "affected_field": null,
+        "expected_action": "verify_or_correct_documents",
+        "explanation": "dangerous_goods_declaration is missing from the expected upload set."
+      }
+    ],
+    "issue_count": 4,
+    "review_recommended": true,
+    "qualified_human_review": false,
+    "status": "issues_detected",
+    "regulatory_compliance": "not_assessed"
+  },
+  "review_notes": [
+    "Automated field checks are not a determination of regulatory compliance. Human review is required.",
+    "A missing document finding may be inconclusive if a PDF failed extraction or could not be identified. Check the upload inventory and extraction metadata before treating a document as genuinely missing."
+  ]
+}

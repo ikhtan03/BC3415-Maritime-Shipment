@@ -69,7 +69,6 @@ def generate_with_retry(client, model, prompt, config, max_attempts=4):
 
 
 
-
 # ---------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------
