@@ -1,0 +1,71 @@
+{
+  "_about": "Fresh answer test set, written before the live run. Each question has the source it should draw on and facts the answer must contain (checked to appear in the corpus). Do not change a question or its facts after a run. A negative control (should_be_not_found) checks the model refuses when the sources do not answer.",
+  "cases": [
+    {
+      "question": "What are the penalties for importing goods without a permit on a second conviction?",
+      "expected_source": "customs_import_procedures_overview",
+      "must_mention": ["S$200,000", "4 times"]
+    },
+    {
+      "question": "Can I declare a sample product at a nominal value?",
+      "expected_source": "customs_import_procedures_overview",
+      "must_mention": ["nominal value", "samples"]
+    },
+    {
+      "question": "How long must importers keep their supporting documents?",
+      "expected_source": "customs_import_procedures_overview",
+      "must_mention": ["5 years"]
+    },
+    {
+      "question": "Which goods are classed as dutiable goods?",
+      "expected_source": "customs_import_procedures_overview",
+      "must_mention": ["motor vehicles", "petroleum products"]
+    },
+    {
+      "question": "Are tobacco products allowed to be imported into Singapore?",
+      "expected_source": "customs_controlled_prohibited_imports",
+      "must_mention": ["tobacco", "cannot be imported"]
+    },
+    {
+      "question": "Which authority is responsible for prohibitions on rhinoceros horn?",
+      "expected_source": "customs_controlled_prohibited_imports",
+      "must_mention": ["National Parks Board"]
+    },
+    {
+      "question": "Who must notify the Port Master before a vessel carrying dangerous cargo arrives?",
+      "expected_source": "mpa_declaring_dangerous_goods",
+      "must_mention": ["owner, agent or master"]
+    },
+    {
+      "question": "How many hours before arrival must a dangerous goods declaration be submitted?",
+      "expected_source": "mpa_declaring_dangerous_goods",
+      "must_mention": ["12 hours"]
+    },
+    {
+      "question": "How much notice does the port need for bulk hazardous and noxious substances?",
+      "expected_source": "mpa_declaring_dangerous_goods",
+      "must_mention": ["24 hours"]
+    },
+    {
+      "question": "What certificate is required for ammonium nitrate cargo?",
+      "expected_source": "mpa_declaring_dangerous_goods",
+      "must_mention": ["Certificate of Analysis"]
+    },
+    {
+      "question": "Which agency approves the transhipment of radioactive material?",
+      "expected_source": "mpa_declaring_dangerous_goods",
+      "must_mention": ["National Environment Agency"]
+    },
+    {
+      "question": "What does the shipper's declaration on the dangerous goods form confirm?",
+      "expected_source": "mmdg_form_p201_onward",
+      "must_mention": ["fully and accurately described"]
+    },
+    {
+      "question": "What is the fee for applying for a dangerous goods permit in Singapore?",
+      "expected_source": null,
+      "should_be_not_found": true,
+      "must_mention": []
+    }
+  ]
+}
