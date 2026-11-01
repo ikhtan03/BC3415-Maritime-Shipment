@@ -20,6 +20,22 @@ HERE = Path(__file__).resolve().parent
 CORPUS = HERE / "corpus"
 MAX_CHARS = 900          # passages are kept short so a match points to a specific rule
 HEADER_PREFIXES = ("Source:", "Authority:", "URL:", "Retrieved:")
+# Short lines that start a separate rule in the MPA and UNECE text. Each one starts a new passage,
+# so a rule is scored on its own words rather than mixed with the timelines or contacts above it.
+SUBHEADING_PREFIXES = ("For ", "Radioactive Material", "Nuclear Material", "Declaring Bulk", "Additional Information")
+GLOSSARY = json.loads((HERE / "glossary.json").read_text(encoding="utf-8"))
+
+
+def expand_query(query):
+    """Add the regulatory terms for any plain-language words in the question (see glossary.json)."""
+    lowered = query.lower()
+    extra = []
+    for plain, entry in GLOSSARY.items():
+        if plain.startswith("_") or not isinstance(entry, dict):
+            continue
+        if plain in lowered:
+            extra.extend(entry["expands_to"])
+    return query if not extra else f"{query} {' '.join(extra)}"
 
 
 def split_source(source_id, meta, text):
@@ -54,6 +70,9 @@ def split_source(source_id, meta, text):
             flush()
             heading = line.lstrip("# ").strip()
             continue
+        if len(line) < 120 and line.startswith(SUBHEADING_PREFIXES):
+            flush()
+            heading = f"{heading} > {line}" if heading else line
         if buffer and size + len(line) > MAX_CHARS:
             flush()
         buffer.append(line)
@@ -90,7 +109,7 @@ class Retriever:
         slots are filled by overall score.
         balanced=False: plain ranking by score, with no source guarantee.
         """
-        query_vector = self.vectorizer.transform([query])
+        query_vector = self.vectorizer.transform([expand_query(query)])
         scores = cosine_similarity(query_vector, self.matrix)[0]
 
         first_pass = []
