@@ -54,6 +54,26 @@ check("supported without a citation is rejected", A.validate_answer(no_cite, PAS
 nf = {"status": "not_found", "citations": [], "quotes": []}
 check("not_found with no citations is accepted", A.validate_answer(nf, PASSAGES)["status"] == A.NOT_FOUND)
 
+# check 2a: a figure in the answer that no quote or cited passage contains is rejected
+PASSAGES_FIG = [
+    {"id": "f1", "source_title": "T", "section": "S",
+     "text": "The declaration shall be submitted not less than 12 hours before arrival."},
+]
+figure_not_in_source = {"answer": "It must be submitted 48 hours before arrival.", "status": "supported",
+                        "citations": ["f1"], "quotes": [{"id": "f1", "quote": "not less than 12 hours before arrival"}]}
+v = A.validate_answer(figure_not_in_source, PASSAGES_FIG)
+check("a figure the sources do not contain is flagged (check 2a)", v["status"] == A.NOT_VERIFIED and any("48" in p for p in v["problems"]))
+
+figure_in_source = {"answer": "It must be submitted 12 hours before arrival.", "status": "supported",
+                    "citations": ["f1"], "quotes": [{"id": "f1", "quote": "not less than 12 hours before arrival"}]}
+check("a figure that matches the source is accepted", A.validate_answer(figure_in_source, PASSAGES_FIG)["status"] == A.SUPPORTED)
+
+# check 2b: says a detail is missing, but the cited passage has a timed figure -> contradiction flagged
+contradiction = {"answer": "The passages do not specify a timeframe.", "status": "supported",
+                 "citations": ["f1"], "quotes": [{"id": "f1", "quote": "12 hours before arrival"}]}
+v = A.validate_answer(contradiction, PASSAGES_FIG)
+check("an answer that denies a timeframe the source gives is flagged (check 2b)", v["status"] == A.NOT_VERIFIED)
+
 # prompt contains every passage id and the no-outside-knowledge instruction
 prompt = A.build_prompt("q?", PASSAGES)
 check("prompt includes each passage id and text", "[p1]" in prompt and "[p2]" in prompt and "net mass" in prompt)

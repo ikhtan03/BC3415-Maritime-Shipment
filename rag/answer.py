@@ -60,6 +60,19 @@ Return valid JSON only.
 """
 
 
+# A figure with a unit, e.g. "24 hours", "5 years", "4 times", "S$200,000", "12%".
+NUMBER_PATTERN = re.compile(
+    r"S\$\s?\d[\d,]*(?:\.\d+)?|\d+(?:\.\d+)?\s?(?:hours?|days?|years?|months?|times|%|kg)\b",
+    re.IGNORECASE,
+)
+# Phrases that say the sources lack a detail.
+NEGATION_PATTERN = re.compile(
+    r"\b(?:do(?:es)? not (?:contain|specify|state|give|provide|include|mention)|"
+    r"not (?:specified|stated|given|provided|mentioned)|no (?:specified|stated) (?:timeframe|time|number|amount))\b",
+    re.IGNORECASE,
+)
+
+
 def normalise(text):
     """Collapse whitespace and unify quote marks so a quote matches the source text."""
     text = text.replace("’", "'").replace("‘", "'").replace("“", '"').replace("”", '"')
@@ -89,6 +102,21 @@ def validate_answer(reply, passages):
 
     if reply.get("status") == SUPPORTED and not citations:
         problems.append("status is supported but no citation was given")
+
+    # Check 2a: every number-with-unit in the answer (for example "24 hours", "5 years", "S$200,000")
+    # must appear in the quotes or in the cited passages. A figure with no source is a likely error.
+    cited_text = " ".join(normalise(by_id[c]["text"]) for c in citations if c in by_id)
+    quote_text = " ".join(normalise(q.get("quote", "")) for q in reply.get("quotes") or [])
+    evidence = cited_text + " " + quote_text
+    for figure in NUMBER_PATTERN.findall(reply.get("answer", "")):
+        if normalise(figure) not in evidence:
+            problems.append(f"answer states {figure!r}, which is not in the quotes or cited passages")
+
+    # Check 2b: an answer that says the sources lack a detail while citing a passage that has one
+    # (a number with a unit) is contradicting itself. Flag it for a person to check.
+    claims_absent = NEGATION_PATTERN.search(reply.get("answer", "")) is not None
+    if reply.get("status") == SUPPORTED and claims_absent and NUMBER_PATTERN.search(cited_text):
+        problems.append("answer says a detail is missing, but a cited passage contains a number with a unit")
 
     verdict = NOT_VERIFIED if problems else reply.get("status", NOT_VERIFIED)
     return {**reply, "status": verdict, "problems": problems}
