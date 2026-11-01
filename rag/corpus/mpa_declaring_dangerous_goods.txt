@@ -1,0 +1,78 @@
+Source: Declaring Dangerous Goods | Maritime and Port Authority of Singapore
+Authority: Maritime and Port Authority of Singapore (MPA)
+URL: https://www.mpa.gov.sg/port-marine-ops/operations/gas-free-hazardous-cargo-info/declaring-dangerous-goods
+Retrieved: 2026-11-01
+
+Declaring Dangerous Goods | Maritime and Port Authority of Singapore
+Home>
+Declaring Dangerous Goods (DG) and Hazardous and Noxious Substances (HNS)>
+Share:
+Share to LinkedInShare to FacebookShare to TwitterShare to Email
+# Declaring Dangerous Goods (DG) and Hazardous and Noxious Substances (HNS)
+Declaring Dangerous Goods (DG)
+1. The Port Master hereby requires:
+(a) the owner, agent or master of any vessel arriving in port and carrying dangerous cargoes to provide the following information and in accordance with the timelines stipulated and
+(b) the owner, agent or master of a vessel onto which dangerous goods (DG) are intended to be loaded to give notice of that intention to the Port Master in accordance with the timelines stipulated in accordance with MPA Act.
+For DG handled at PSA terminals For DG handled at Jurong Port For DG handled at other locations e.g. anchorages
+Submission methodPSA PORTNETJP-OnlinedigitalPORT@SGTM
+Helpdesk
++65 6321 1173
++65 6771 7711
+csc@portnet.com
++65 6265 0666
+jpcss@jp.com.sg
+MPA Hazardous Cargo Section
++65 6325 2421
+hazmat@mpa.gov.sg
+Submission timelines
+The declaration shall be submitted not less than 12 hours:
+Before a vessel’s arrival for discharging or in-transit DG in the port; or
+Before the loading of DG onto a vessel.
+The declaration form shall be submitted not less than 12 hours:
+Before a vessel’s arrival in port for DG in transit (on board); or for discharging or loading of DG onto another vessel at the anchorage.
+2. Additional Information required
+For Ammonium Nitrate (UN No. 1942, 2067 & 2426) DG
+A Certificate of Analysis (COA) issued by a body deemed competent by the Authority stating the percentage of total combustible matter (including organic matter calculated as carbon).
+Radioactive Material (IMO Class 7 cargo that are not considered nuclear material*
+An additional approval from the National Environment Agency (NEA), Radiation Protection and Nuclear Science Group (RPNSG) is required for transhipment or transit of any radioactive material.
+The application form for tranship/ transit radioactive material is available at NEA ePortal.
+Completed form must be submitted to NEA_RPNSD_Tranship_Transit@nea.gov.sg
+Nuclear Material* (IMO Class 7 cargo)
+A licence from the National Environment Agency (NEA), Radiation Protection and Nuclear Science Group (RPNSG) is required for all transit of nuclear material* through Singapore. Apply the licence for the transit of nuclear material via GoBusiness, under “IR5A/B/C Licence to import or export a consignment of radioactive materials, or to transit or tranship a consignment of nuclear material”.
+For enquires on transit or transhipment of nuclear material*, please send to NEA_RPNSD_Tranship_Transit@nea.gov.sg.
+Note: * Nuclear material is as defined in the Radiation Protection Act (RPA) under section 28(1) of the Radiation Protection Act, as stipulated via link.
+3. For storage of DG at terminals, please enquire with the terminal operators and obtain their approval where necessary.
+4. Some DG are also classified as strategic goods controlled under the Strategic Goods
+(Control) Act. A TradeNet® permit will be required prior to the export, transhipment, or bringing in transit of goods that are controlled as strategic goods. You may refer to the Strategic Goods Control List to check if your items are strategic goods.
+5. For more information on strategic goods control, you may refer to the Strategic Goods Control website or contact the Singapore Customs Call Centre at +65 6355 2000.
+Declaring Bulk Hazardous and Noxious Substances (HNS)
+1. According to MPA Act, owner, agent or master of any ship shall notify the Port Master if the ship is carrying or intending to load the following Hazardous and Noxious Substances (HNS) in bulk, before the ship’s arrival in Port, which include:
+(a) Noxious liquid substances carried in bulk referred to in Regulation 1(10) of the MARPOL 73/78 Annex II, and those substances and mixtures provisionally categorised in accordance with Regulation 6(3) of the said Annex II.
+(b) Dangerous liquid substances listed under the International Code for the Construction and Equipment of Ships Carrying Dangerous Chemicals in Bulk (IBC Code), 2020.
+(c) Liquefied gases listed under the International Code for the Construction and Equipment of Ships Carrying Liquefied Gases in Bulk (IGC Code), 2016, as amended.
+(d) Solid bulk materials under the International Maritime Solid Bulk Cargoes Code (IMSBC Code), 2025, as amended, and
+(e) Residues from the previous carriage in bulk of substances referred to in (a) to (d) above.
+2. Submit the required notification via digitalPORT@SGTM 24 hours before the vessel’s arrival or when the vessel is in port 24 hours before loading operation.
+3. For enquiries regarding the procedures for DG or HNS declaration, please contact us at: hazmat@mpa.gov.sg or +65 6325 2421
+4. For technical issues encountered during digitalPort@SGTM submissions, please contact +65 6375 1206
+### Frequently Asked Questions
+Q1. What happens if agents could not find matching chemical names in the HNS database?
+A1: digitalPORT@SGTM allows agent to key in the chemical/trade/synonyms name of the substance they are declaring if they are not able to find them in the database.
+LAST UPDATED 02 NOV 2020
+Q1: What is the “Grouping Classification” of a Dangerous Good (DG)?
+A1: MPA adheres to the International Maritime Dangerous Goods (IMDG) Code on the transportation and storage of Dangerous Goods (DG) for sea transportation. With effect from 31 Jan 2005, enquiries regarding “Group Classification” of Dangerous Goods (DG) (i.e. PSA Group 1S, 2S, 3 etc.) for storage and handling at terminals, please direct them to the respective terminals, e.g. PSA or Jurong Port terminals.
+Q2: What is the weight limitation of First Schedule Dangerous Goods (DG)?
+A2: The weight limitation on First Schedule DG can be found in “Appendix 2 - Quantity of First Schedule Dangerous Goods Which May Remain on Board Any Vessel at Any Jurong Port Container Berth, PSA Container Berth, Conventional Berth, the Tuas Jetty or the Sudong Explosive Anchorage”.
+Q3: I’m unsure whether my commodities are classified as Dangerous Goods (DG) or general cargo?
+A3: Please seek clarification with your shipper or the manufacturer of the cargo first.
+While we endeavour to assist in DG enquires whenever possible, please note that as the shore-based personnel engaged in the transport of DG, you must be trained in the contents of the dangerous goods provisions that commensurate with your responsibilities as well. This will include going through the Safety Data Sheet and be able to differentiate whether the cargo is a DG or not, the different IMO Classes and where to find the UN No.
+If the cargo’s Safety Data Sheet is unclear or may require technical interpretation, please obtain a complete Safety Data Sheet (SDS) of the commodity and email to hazmat@mpa.gov.sg for advice/verification.
+See also:
+Appendix 1 - Maritime and Port Authority of Singapore (Dangerous Goods, Petroleum and Explosives) Regulations 2005
+Appendix 2 - Quantity of First Schedule Dangerous Goods Which May Remain on Board Any Vessel at Any Jurong Port Container Berth, PSA Container Berth, Conventional Berth, the Tuas Jetty or the Sudong Explosive Anchorage
+Notice on New Licensing Requirement for Transportation of Nuclear Material
+Changes to Permit Exemptions under Regulations 13(2) of the Strategic Goods (Control) Regulations (MPA PMC No. 13 of 2014)
+Useful Links
+Notification of New Licensing Requirement for Transportation of Nuclear Material (.pdf, 252 KB)
+APPENDIX 1 - MARITIME AND PORT AUTHORITY OF SINGAPORE (DANGEROUS GOODS, PETROLEUM AND EXPLOSIVES) REGULATIONS 2005 (.pdf, 45 KB)
+Appendix 2 - DGPE Third Schedule (MPA Website)_13 Nov 2025
