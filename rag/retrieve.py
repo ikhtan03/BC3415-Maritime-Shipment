@@ -82,15 +82,34 @@ class Retriever:
     def from_corpus(cls):
         return cls(load_passages())
 
-    def search(self, query, k=3):
-        """Return the k most relevant passages, each with its similarity score (0 to 1)."""
+    def search(self, query, k=3, balanced=True):
+        """Return up to k passages with similarity scores (0 to 1), best first.
+
+        balanced=True: the best passage from each source is considered first, so a very long
+        source (the UNECE form has most of the passages) cannot fill every slot. The remaining
+        slots are filled by overall score.
+        balanced=False: plain ranking by score, with no source guarantee.
+        """
         query_vector = self.vectorizer.transform([query])
         scores = cosine_similarity(query_vector, self.matrix)[0]
-        ranked = scores.argsort()[::-1][:k]
-        results = []
-        for index in ranked:
-            if scores[index] <= 0:
+
+        first_pass = []
+        if balanced:
+            best_per_source = {}
+            for index in scores.argsort()[::-1]:
+                if scores[index] <= 0:
+                    break
+                best_per_source.setdefault(self.passages[index]["source_id"], index)
+            first_pass = sorted(best_per_source.values(), key=lambda i: -scores[i])[:k]
+        chosen = list(first_pass)
+        for index in scores.argsort()[::-1]:
+            if len(chosen) >= k or scores[index] <= 0:
                 break
+            if index not in chosen:
+                chosen.append(index)
+
+        results = []
+        for index in sorted(chosen, key=lambda i: -scores[i]):
             result = dict(self.passages[index])
             result["score"] = round(float(scores[index]), 3)
             results.append(result)
