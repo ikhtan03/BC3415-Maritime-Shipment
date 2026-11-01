@@ -95,7 +95,11 @@ class Retriever:
     def __init__(self, passages):
         self.passages = passages
         self.vectorizer = TfidfVectorizer(ngram_range=(1, 2), stop_words="english", sublinear_tf=True)
-        self.matrix = self.vectorizer.fit_transform([p["text"] for p in passages])
+        # The section heading and source title are indexed with the text: they name what a passage is about
+        # (for example "Penalties Upon Conviction" or "Prohibited Goods") and were being ignored.
+        self.matrix = self.vectorizer.fit_transform(
+            [f"{p['source_title']} {p['section']} {p['text']}" for p in passages]
+        )
 
     @classmethod
     def from_corpus(cls):
