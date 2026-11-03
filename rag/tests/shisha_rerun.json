@@ -1,0 +1,10 @@
+{
+  "_about": "Re-run of the one v2 question that had no answer (repeated 503 errors). This is a RE-RUN: the v2 set has already been seen, so label any result from this file as a re-run in the report. Same question and facts as answer_set_v2.json.",
+  "cases": [
+    {
+      "question": "Is shisha allowed to be imported into Singapore?",
+      "expected_source": "customs_controlled_prohibited_imports",
+      "must_mention": ["shisha"]
+    }
+  ]
+}
