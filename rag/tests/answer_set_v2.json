@@ -1,0 +1,56 @@
+{
+  "_about": "Second fresh answer test set, written after the retrieval change (heading kept in each passage text; up to two passages per source first). Every must_mention fact was checked by search to appear in the corpus. None of these questions was used to tune retrieval. Do not change a question or its facts after a run. The negative control (should_be_not_found) checks the model refuses when the sources do not answer.",
+  "cases": [
+    {
+      "question": "What is the maximum fine for making an incorrect customs declaration?",
+      "expected_source": "customs_import_procedures_overview",
+      "must_mention": ["S$10,000", "12 months"]
+    },
+    {
+      "question": "What is the penalty for making a false declaration under the RIEA?",
+      "expected_source": "customs_import_procedures_overview",
+      "must_mention": ["S$10,000", "2 years"]
+    },
+    {
+      "question": "Can Singapore Customs compound minor offences, and up to what amount?",
+      "expected_source": "customs_import_procedures_overview",
+      "must_mention": ["S$5,000"]
+    },
+    {
+      "question": "Which codes must be accurate on an import declaration?",
+      "expected_source": "customs_import_procedures_overview",
+      "must_mention": ["Harmonised System"]
+    },
+    {
+      "question": "Is shisha allowed to be imported into Singapore?",
+      "expected_source": "customs_controlled_prohibited_imports",
+      "must_mention": ["shisha"]
+    },
+    {
+      "question": "Which email address should I use to ask for advice on a cargo Safety Data Sheet?",
+      "expected_source": "mpa_declaring_dangerous_goods",
+      "must_mention": ["hazmat@mpa.gov.sg"]
+    },
+    {
+      "question": "Who do I contact about technical problems with digitalPort submissions?",
+      "expected_source": "mpa_declaring_dangerous_goods",
+      "must_mention": ["6375 1206"]
+    },
+    {
+      "question": "Which UN numbers are listed for ammonium nitrate in the additional information?",
+      "expected_source": "mpa_declaring_dangerous_goods",
+      "must_mention": ["1942", "2067"]
+    },
+    {
+      "question": "Until when can a composite cylinder with a design life longer than 15 years be filled?",
+      "expected_source": "mmdg_form_p201_onward",
+      "must_mention": ["after 15 years"]
+    },
+    {
+      "question": "What is the import duty rate on wine?",
+      "expected_source": null,
+      "should_be_not_found": true,
+      "must_mention": []
+    }
+  ]
+}

@@ -11,6 +11,7 @@ For each question it records:
 
 Results are written to rag/tests/answer_results.csv. Do not edit answer_set.json after a run.
 """
+import argparse
 import csv
 import json
 import sys
@@ -21,11 +22,16 @@ sys.path.insert(0, str(HERE.parent))
 import answer as A  # noqa: E402
 from retrieve import Retriever  # noqa: E402
 
-SET = HERE / "answer_set.json"
-RESULTS = HERE / "answer_results.csv"
-
 
 def main():
+    parser = argparse.ArgumentParser(description="Run an answer test set once and record the results.")
+    parser.add_argument("--set", default=str(HERE / "answer_set.json"), help="the test set to run")
+    args = parser.parse_args()
+    SET = Path(args.set)
+    # Results are written next to the set: answer_set.json gives answer_results.csv,
+    # answer_set_v2.json gives answer_set_v2_results.csv.
+    RESULTS = SET.with_name(SET.stem + "_results.csv")
+
     cases = json.loads(SET.read_text(encoding="utf-8"))["cases"]
     retriever = Retriever.from_corpus()
     rows = []

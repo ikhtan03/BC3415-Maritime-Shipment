@@ -19,6 +19,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 HERE = Path(__file__).resolve().parent
 CORPUS = HERE / "corpus"
 MAX_CHARS = 900          # passages are kept short so a match points to a specific rule
+PER_SOURCE_FIRST = 2     # balanced search takes at most this many passages from one source first
 HEADER_PREFIXES = ("Source:", "Authority:", "URL:", "Retrieved:")
 # Short lines that start a separate rule in the MPA and UNECE text. Each one starts a new passage,
 # so a rule is scored on its own words rather than mixed with the timelines or contacts above it.
@@ -48,13 +49,17 @@ def split_source(source_id, meta, text):
         body = "\n".join(buffer).strip()
         if body:
             count += 1
+            # The heading is repeated at the top of every passage. Without it, a rule that was split
+            # off from its heading (for example the 24-hour notice for bulk HNS) loses the words that
+            # say what it is about, and retrieval and the answer step both miss it.
+            text = f"{heading}\n{body}" if heading else body
             passages.append({
                 "id": f"{source_id}#{count}",
                 "source_id": source_id,
                 "source_title": meta["title"],
                 "url": meta["url"],
                 "section": heading or "(no heading)",
-                "text": body,
+                "text": text,
             })
         buffer, size = [], 0
 
@@ -118,12 +123,18 @@ class Retriever:
 
         first_pass = []
         if balanced:
-            best_per_source = {}
+            # Up to PER_SOURCE_FIRST passages from each source are considered first. This keeps a very
+            # long source from filling every slot, but lets one source hold two related rules (for example
+            # the intro and the bulk-HNS notice in the MPA page) when both match the question.
+            taken = {}
             for index in scores.argsort()[::-1]:
                 if scores[index] <= 0:
                     break
-                best_per_source.setdefault(self.passages[index]["source_id"], index)
-            first_pass = sorted(best_per_source.values(), key=lambda i: -scores[i])[:k]
+                source = self.passages[index]["source_id"]
+                if taken.get(source, 0) < PER_SOURCE_FIRST:
+                    taken[source] = taken.get(source, 0) + 1
+                    first_pass.append(index)
+            first_pass = sorted(first_pass, key=lambda i: -scores[i])[:k]
         chosen = list(first_pass)
         for index in scores.argsort()[::-1]:
             if len(chosen) >= k or scores[index] <= 0:
