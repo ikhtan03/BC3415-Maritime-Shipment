@@ -61,8 +61,9 @@ Return valid JSON only.
 
 
 # A figure with a unit, e.g. "24 hours", "5 years", "4 times", "S$200,000", "12%".
+# A money figure must end in a digit, so a comma after it ("S$10,000, which") is not part of it.
 NUMBER_PATTERN = re.compile(
-    r"S\$\s?\d[\d,]*(?:\.\d+)?|\d+(?:\.\d+)?\s?(?:hours?|days?|years?|months?|times|%|kg)\b",
+    r"S\$\s?\d(?:[\d,]*\d)?(?:\.\d+)?|\d+(?:\.\d+)?\s?(?:hours?|days?|years?|months?|times|%|kg)\b",
     re.IGNORECASE,
 )
 # Phrases that say the sources lack a detail.
@@ -79,6 +80,12 @@ def normalise(text):
     return re.sub(r"\s+", " ", text).strip().lower()
 
 
+def clean_id(cid):
+    """The prompt asks for IDs in square brackets, and the model often copies the brackets too.
+    "[passage#3]" and "passage#3" name the same passage, so strip them before checking."""
+    return cid.strip().strip("[]").strip() if isinstance(cid, str) else cid
+
+
 def validate_answer(reply, passages):
     """Check the model's reply against the passages it was given. Returns the reply with a verdict."""
     by_id = {p["id"]: p for p in passages}
@@ -87,12 +94,15 @@ def validate_answer(reply, passages):
     if not isinstance(reply, dict):
         return {"status": NOT_VERIFIED, "problems": ["reply is not a JSON object"]}
 
-    citations = reply.get("citations") or []
+    citations = [clean_id(c) for c in (reply.get("citations") or [])]
+    quotes = [{**item, "id": clean_id(item.get("id"))} for item in (reply.get("quotes") or [])]
+    reply = {**reply, "citations": citations, "quotes": quotes}
+
     for cid in citations:
         if cid not in by_id:
             problems.append(f"citation {cid} was not one of the passages given")
 
-    for item in reply.get("quotes") or []:
+    for item in quotes:
         cid, quote = item.get("id"), item.get("quote", "")
         if cid not in by_id:
             problems.append(f"quote refers to {cid}, which was not given")

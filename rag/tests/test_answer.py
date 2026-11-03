@@ -68,6 +68,23 @@ figure_in_source = {"answer": "It must be submitted 12 hours before arrival.", "
                     "citations": ["f1"], "quotes": [{"id": "f1", "quote": "not less than 12 hours before arrival"}]}
 check("a figure that matches the source is accepted", A.validate_answer(figure_in_source, PASSAGES_FIG)["status"] == A.SUPPORTED)
 
+# a money figure followed by a comma is the same figure as the source (fix: trailing comma)
+PASSAGES_MONEY = [
+    {"id": "m1", "source_title": "T", "section": "S",
+     "text": "Making a false declaration: fine up to S$10,000 or imprisonment up to 2 years, or both."},
+]
+money_comma = {"answer": "The fine is up to S$10,000, or imprisonment up to 2 years.", "status": "supported",
+               "citations": ["m1"], "quotes": [{"id": "m1", "quote": "fine up to S$10,000 or imprisonment up to 2 years"}]}
+v = A.validate_answer(money_comma, PASSAGES_MONEY)
+check("a money figure followed by a comma matches the source", v["status"] == A.SUPPORTED, str(v["problems"]))
+
+# citation IDs written in square brackets name the same passage (fix: bracketed citations)
+bracketed = {"answer": "Use the email address.", "status": "supported",
+             "citations": ["[p1]"], "quotes": [{"id": "[p1]", "quote": "A Certificate of Analysis (COA) is required for ammonium nitrate."}]}
+v = A.validate_answer(bracketed, PASSAGES)
+check("bracketed citation IDs are accepted", v["status"] == A.SUPPORTED, str(v["problems"]))
+check("bracketed citation IDs are cleaned in the result", v["citations"] == ["p1"] and v["quotes"][0]["id"] == "p1")
+
 # check 2b: says a detail is missing, but the cited passage has a timed figure -> contradiction flagged
 contradiction = {"answer": "The passages do not specify a timeframe.", "status": "supported",
                  "citations": ["f1"], "quotes": [{"id": "f1", "quote": "12 hours before arrival"}]}
