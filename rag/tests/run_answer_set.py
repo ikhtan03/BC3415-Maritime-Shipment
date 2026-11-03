@@ -15,12 +15,29 @@ import argparse
 import csv
 import json
 import sys
+import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 import answer as A  # noqa: E402
 from retrieve import Retriever  # noqa: E402
+
+
+def ask_with_retries(question, retriever, attempts=3):
+    """Ask the live model. A failed call (for example a 503 "high demand" error) is retried, then
+    recorded as status "error" so the run finishes and the failure shows in the results."""
+    last_error = None
+    for attempt in range(1, attempts + 1):
+        try:
+            return A.answer(question, retriever, k=3)
+        except Exception as exc:  # network, quota or server errors: keep the run going and record it
+            last_error = exc
+            print(f"  attempt {attempt} failed: {str(exc)[:120]}")
+            if attempt < attempts:
+                time.sleep(20 * attempt)
+    return {"status": "error", "answer": "", "citations": [], "quotes": [], "passages": [],
+            "problems": [f"model call failed after {attempts} attempts: {str(last_error)[:200]}"]}
 
 
 def main():
@@ -36,7 +53,7 @@ def main():
     retriever = Retriever.from_corpus()
     rows = []
     for case in cases:
-        result = A.answer(case["question"], retriever, k=3)
+        result = ask_with_retries(case["question"], retriever)
         status = result.get("status")
         answer_text = result.get("answer", "")
         cited = result.get("citations", [])
@@ -72,6 +89,7 @@ def main():
     print(f"\nstatus correct:         {sum(r['status_ok'] == 'PASS' for r in rows)} of {n}")
     print(f"right source cited:     {sum(r['source_ok'] == 'PASS' for r in rows)} of {sum(r['source_ok'] != '' for r in rows)}")
     print(f"verification failures:  {sum(r['status'] == A.NOT_VERIFIED for r in rows)} of {n}")
+    print(f"model call errors:      {sum(r['status'] == 'error' for r in rows)} of {n}")
     print(f"results saved to {RESULTS}")
 
 
