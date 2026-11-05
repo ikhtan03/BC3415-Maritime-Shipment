@@ -28,6 +28,7 @@ if str(BACKEND_DIR) not in sys.path:
 
 from extract_documents import extract_shipment
 from validator import validate
+from verification import reextractor, verify
 
 
 def save_json(file_path, data):
@@ -119,6 +120,14 @@ def main():
             if isinstance(item, dict) and item.get("filename")
         }
         validation_result = validate(documents, uploaded=uploaded_types)
+
+        # Verification rounds: flagged fields are re-extracted and re-checked, up to two rounds
+        # (the answer keys' verification_expectations).
+        if validation_result.get("findings"):
+            print("\nRe-checking flagged fields...")
+            verified = verify(documents, uploaded_types, reextractor(pdf_folder, extract_shipment))
+            validation_result = verified["validation"]
+            validation_result["verification_rounds"] = verified["rounds"]
 
         if not isinstance(validation_result, dict):
             raise TypeError(

@@ -69,5 +69,19 @@ calls.clear()
 clean = VR.verify(clean_docs, list(clean_docs), same, max_rounds=2)
 check("a report with no flagged fields needs no re-extraction", clean["rounds"] == [] and calls == [])
 
+# reextractor copies only the named document's PDF and returns that document's fields
+import tempfile  # noqa: E402
+with tempfile.TemporaryDirectory() as source:
+    Path(source, "bill_of_lading.pdf").write_bytes(b"%PDF-fake")
+
+    def fake_extract(pdf_folder):
+        present = [p.stem for p in Path(pdf_folder).glob("*.pdf")]
+        return {"documents": {doc: {"gross_cargo_weight_kg": 18500} for doc in present}}
+
+    rex = VR.reextractor(source, fake_extract)
+    check("reextractor returns the fields for the document that has a PDF",
+          rex("bill_of_lading") == {"gross_cargo_weight_kg": 18500})
+    check("reextractor returns None for a document with no PDF", rex("packing_list") is None)
+
 print(f"\n{'all checks passed' if not FAILS else str(len(FAILS)) + ' failed'}")
 raise SystemExit(1 if FAILS else 0)

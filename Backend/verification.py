@@ -9,6 +9,9 @@ and returns its fields as a dict, or None if extraction failed. Keeping it as a 
 round logic be tested without the Gemini API.
 """
 import copy
+import shutil
+import tempfile
+from pathlib import Path
 
 from validator import validate
 
@@ -42,3 +45,17 @@ def verify(documents, uploaded, reextract, max_rounds=2):
             "remaining": sorted({f["finding_type"] for f in result["findings"] if f["finding_type"] in RECHECK}),
         })
     return {"validation": result, "documents": documents, "rounds": rounds}
+
+
+def reextractor(pdf_folder, extract_fn):
+    """Return reextract(doc_type) for verify(): it copies the PDF for that document into a temporary
+    folder on its own, runs extract_fn on that folder, and returns the document's fields (or None)."""
+    def reextract(doc_type):
+        pdfs = [path for path in Path(pdf_folder).rglob("*.pdf") if path.stem == doc_type]
+        if not pdfs:
+            return None
+        with tempfile.TemporaryDirectory() as folder:
+            shutil.copy(pdfs[0], folder)
+            result = extract_fn(pdf_folder=folder)
+        return result.get("documents", {}).get(doc_type)
+    return reextract
