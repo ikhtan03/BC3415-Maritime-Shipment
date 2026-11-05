@@ -50,5 +50,10 @@ docs = {
 check("matching class with a 'CLASS' prefix is not a conflict",
       not any(f["finding_type"] == "dg_class_conflict" for f in V.validate(docs)["findings"]))
 
+# a weight written with commas and a unit matches the same number
+check("'18,500 kg' matches 18500", V.clean("18,500 kg") == V.clean(18500))
+check("'18500' matches 18500", V.clean("18500") == V.clean(18500))
+check("text values are not turned into numbers", V.clean("MSCU6639878") == "MSCU6639878")
+
 print(f"\n{'all checks passed' if not FAILS else str(len(FAILS)) + ' failed'}")
 raise SystemExit(1 if FAILS else 0)

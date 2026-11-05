@@ -11,11 +11,19 @@ from pathlib import Path
 REQUIRED = ('bill_of_lading', 'commercial_invoice', 'packing_list', 'dangerous_goods_declaration')
 
 
+NUMBER_WITH_UNIT = re.compile(r"\s*([\d,]+(?:\.\d+)?)\s*(?:kg|kgs|kilograms?)?\s*", re.IGNORECASE)
+
+
 def clean(value):
     if value is None:
         return None
     if isinstance(value, str):
-        value = re.sub(r'^CLASS\s+', '', value.strip(), flags=re.IGNORECASE)
+        # A class written as "CLASS 9" is the same class as "9".
+        value = re.sub(r"^CLASS\s+", "", value.strip(), flags=re.IGNORECASE)
+        if NUMBER_WITH_UNIT.fullmatch(value):
+            # "18,500 kg" and 18500 are the same weight: drop the commas and unit before comparing.
+            number = float(NUMBER_WITH_UNIT.fullmatch(value).group(1).replace(",", ""))
+            return int(number) if number.is_integer() else number
         return value.upper() if value else None
     return value
 
