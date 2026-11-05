@@ -59,6 +59,22 @@ Known answer failures:
 - The bulk-notice question, in set 1: the model said no timeframe was given, because the 24-hour sentence was not in the passages it received. The heading change and the two-per-source change address this in retrieval. The answer step has not been re-run since.
 - The model can leave out part of an answer, as in the customs penalty case above. The checks only test what the answer says, not whether it is complete.
 
+**Set v3 (6 questions plus 1 negative control), first complete run, OpenAI model.** A different model from the earlier Gemini runs, so not directly comparable with them. Run once, at the model's default temperature, so answers can vary a little between runs. Results are in `rag/tests/answer_set_v3_openai_results.csv`.
+
+| Question | Result | Note |
+|---|---|---|
+| First-conviction penalty | Correct | The "facts missing" flag is a wording mismatch: the answer says "three times", the expected fact is "3 times". The set is not changed, since it has been run |
+| Tampering with safeguards, fine S$8,000 | Wrong, flagged | The answer says no fixed fine is stated. The search cited the compounding passages instead. The checker flagged it (denial check) |
+| Removing goods from customs control, S$5,000 | Correct | |
+| Packing group required on dangerous cargo? | Wrong, not flagged | The search returned the MPA page, not the UNECE passage. The model said the passages don't cover it. No check fires on a wrong "not found" without a figure |
+| Shipper's declaration details | Correct | |
+| Hazard class in a declaration | Correct | |
+| Strategic goods licence fee (negative control) | Correct | Declined, as it should be |
+
+Status correct: 5 of 7. Right source cited: 5 of 6 answered.
+
+Both failures are retrieval misses, not model errors. The packing group miss is the shipper's declaration weakness recorded above. The checker's blind spot is a wrong "not found" with no figure to check, which is recorded as a known limit.
+
 ## 3. Source checks
 
 - Automatic comparison (`rag/corpus/check_sources.py`): every stored sentence from the three web sources still appears on the live pages, 0 missing.
