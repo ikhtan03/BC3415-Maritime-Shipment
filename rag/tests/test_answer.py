@@ -119,5 +119,21 @@ check("end to end: the prompt was built from retrieved passages", "[" in seen.ge
 empty = A.answer("zzqxv wrvk", retriever, model=stub)
 check("nothing relevant gives not_found without calling the model", empty["status"] == A.NOT_FOUND)
 
+# warning: a quoted rule has a figure that the answer leaves out (does not change the verdict)
+PASSAGES_OMIT = [
+    {"id": "o1", "source_title": "T", "section": "S",
+     "text": "Fine up to S$10,000 or imprisonment up to 12 months, or both."},
+]
+omits = {"answer": "The fine is up to S$10,000.", "status": "supported", "citations": ["o1"],
+         "quotes": [{"id": "o1", "quote": "Fine up to S$10,000 or imprisonment up to 12 months, or both."}]}
+v = A.validate_answer(omits, PASSAGES_OMIT)
+check("an omitted figure in the quoted rule gives a warning", any("12 months" in w for w in v["warnings"]), str(v["warnings"]))
+check("an omitted figure does not change the verdict", v["status"] == A.SUPPORTED, str(v["problems"]))
+
+full = {"answer": "The fine is up to S$10,000, or imprisonment up to 12 months.", "status": "supported",
+        "citations": ["o1"],
+        "quotes": [{"id": "o1", "quote": "Fine up to S$10,000 or imprisonment up to 12 months, or both."}]}
+check("a complete answer gives no omission warning", A.validate_answer(full, PASSAGES_OMIT)["warnings"] == [])
+
 print(f"\n{'all checks passed' if not FAILS else str(len(FAILS)) + ' failed'}")
 raise SystemExit(1 if FAILS else 0)

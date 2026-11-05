@@ -1,0 +1,41 @@
+{
+  "_about": "Third fresh answer test set, written after the v2 run and the retrieval changes, before any live run. Each must_mention fact is checked to appear in the corpus. Questions cover customs penalties not used in v2, the UNECE shipper's declaration, and one negative control. Do not change a question or its facts after a run.",
+  "cases": [
+    {
+      "question": "What is the penalty for importing without a permit on a first conviction?",
+      "expected_source": "customs_import_procedures_overview",
+      "must_mention": ["S$100,000", "3 times"]
+    },
+    {
+      "question": "What is the fine for unauthorised tampering with safeguards on containerised dutiable goods?",
+      "expected_source": "customs_import_procedures_overview",
+      "must_mention": ["S$8,000"]
+    },
+    {
+      "question": "What is the fine for failing to comply with the conditions for removing goods from customs control?",
+      "expected_source": "customs_import_procedures_overview",
+      "must_mention": ["S$5,000"]
+    },
+    {
+      "question": "Must the packing group be stated when declaring dangerous cargo?",
+      "expected_source": "mmdg_form_p201_onward",
+      "must_mention": ["packing group"]
+    },
+    {
+      "question": "What must the shipper specify for dangerous goods on the shipper's declaration?",
+      "expected_source": "mmdg_form_p201_onward",
+      "must_mention": ["proper shipping name"]
+    },
+    {
+      "question": "What must a dangerous goods declaration state about the hazard class?",
+      "expected_source": "mmdg_form_p201_onward",
+      "must_mention": ["hazard class"]
+    },
+    {
+      "question": "What is the fee for a strategic goods licence?",
+      "expected_source": null,
+      "should_be_not_found": true,
+      "must_mention": []
+    }
+  ]
+}

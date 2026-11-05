@@ -128,8 +128,17 @@ def validate_answer(reply, passages):
     if reply.get("status") == SUPPORTED and claims_absent and NUMBER_PATTERN.search(cited_text):
         problems.append("answer says a detail is missing, but a cited passage contains a number with a unit")
 
+    # Warning only (does not change the verdict): a figure in a quoted rule that the answer does not
+    # mention, for example the imprisonment term left out of a penalty answer. Only quoted text is
+    # checked, so a long table in a cited passage does not produce a warning for every number in it.
+    warnings = []
+    answer_norm = normalise(reply.get("answer", ""))
+    for figure in NUMBER_PATTERN.findall(quote_text):
+        if normalise(figure) not in answer_norm:
+            warnings.append(f"the quoted rule states {figure!r}, which the answer does not mention")
+
     verdict = NOT_VERIFIED if problems else reply.get("status", NOT_VERIFIED)
-    return {**reply, "status": verdict, "problems": problems}
+    return {**reply, "status": verdict, "problems": problems, "warnings": warnings}
 
 
 def call_gemini(prompt):
