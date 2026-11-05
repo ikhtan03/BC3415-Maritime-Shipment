@@ -160,6 +160,34 @@ def call_gemini(prompt):
     return json.loads(response.text)
 
 
+def call_openai(prompt):
+    """Send the prompt to an OpenAI chat model and return the parsed JSON reply.
+    Needs OPENAI_API_KEY; the model name comes from OPENAI_MODEL."""
+    from openai import OpenAI
+
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError("OPENAI_API_KEY is not set. Set it, or use --dry-run.")
+    client = OpenAI(api_key=api_key)
+    response = client.chat.completions.create(
+        model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+        messages=[{"role": "user", "content": prompt}],
+        response_format={"type": "json_object"},
+        temperature=0,
+    )
+    content = response.choices[0].message.content
+    if not content:
+        raise RuntimeError("OpenAI returned an empty reply.")
+    return json.loads(content)
+
+
+def call_model(prompt):
+    """Use OpenAI when LLM_PROVIDER is "openai"; otherwise Gemini (the default)."""
+    if os.getenv("LLM_PROVIDER", "gemini").lower() == "openai":
+        return call_openai(prompt)
+    return call_gemini(prompt)
+
+
 def answer(question, retriever, k=3, model=None):
     """Retrieve, ask, and validate. `model` is a function(prompt) -> reply, used by tests."""
     passages = retriever.search(question, k=k, balanced=True)
@@ -167,7 +195,7 @@ def answer(question, retriever, k=3, model=None):
         return {"status": NOT_FOUND, "answer": "No passage in the corpus matches this question.",
                 "citations": [], "quotes": [], "problems": [], "passages": []}
     prompt = build_prompt(question, passages)
-    reply = (model or call_gemini)(prompt)
+    reply = (model or call_model)(prompt)
     result = validate_answer(reply, passages)
     result["passages"] = [p["id"] for p in passages]
     return result
