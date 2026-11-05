@@ -135,5 +135,13 @@ full = {"answer": "The fine is up to S$10,000, or imprisonment up to 12 months."
         "quotes": [{"id": "o1", "quote": "Fine up to S$10,000 or imprisonment up to 12 months, or both."}]}
 check("a complete answer gives no omission warning", A.validate_answer(full, PASSAGES_OMIT)["warnings"] == [])
 
+# a "not found" answer with passages retrieved gets a review warning (verdict unchanged)
+nf_with_passages = {"answer": "The passages do not say.", "status": "not_found", "citations": [], "quotes": []}
+v = A.validate_answer(nf_with_passages, PASSAGES)
+check("not_found with passages retrieved gets a review warning",
+      v["status"] == A.NOT_FOUND and any("check whether they answer" in w for w in v["warnings"]))
+v = A.validate_answer(nf, [])
+check("not_found with no passages gets no review warning", v["warnings"] == [])
+
 print(f"\n{'all checks passed' if not FAILS else str(len(FAILS)) + ' failed'}")
 raise SystemExit(1 if FAILS else 0)

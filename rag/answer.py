@@ -132,6 +132,10 @@ def validate_answer(reply, passages):
     # mention, for example the imprisonment term left out of a penalty answer. Only quoted text is
     # checked, so a long table in a cited passage does not produce a warning for every number in it.
     warnings = []
+    # A "not found" answer is not checked for figures or quotes, so a wrong "not found" would pass.
+    # Passages were retrieved, so ask a person to check whether they answer the question.
+    if reply.get("status") == NOT_FOUND and passages:
+        warnings.append(f"no answer was given, but {len(passages)} passage(s) were retrieved; check whether they answer the question")
     answer_norm = normalise(reply.get("answer", ""))
     for figure in NUMBER_PATTERN.findall(quote_text):
         if normalise(figure) not in answer_norm:
