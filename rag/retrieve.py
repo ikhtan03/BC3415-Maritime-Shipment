@@ -25,6 +25,11 @@ HEADER_PREFIXES = ("Source:", "Authority:", "URL:", "Retrieved:")
 # so a rule is scored on its own words rather than mixed with the timelines or contacts above it.
 SUBHEADING_PREFIXES = ("For ", "Radioactive Material", "Nuclear Material", "Declaring Bulk", "Additional Information")
 GLOSSARY = json.loads((HERE / "glossary.json").read_text(encoding="utf-8"))
+# Words that describe the question rather than the topic, for example "is X allowed to be imported".
+# They match the import-procedure passages and push the right list item down, so they are dropped from
+# the query before searching. Only the query changes; the passages are not affected.
+QUESTION_WORDS = {"allowed", "allow", "allows", "permitted", "import", "imports", "imported", "importing",
+                  "singapore", "bring", "carry", "brought", "legal"}
 
 
 def expand_query(query):
@@ -37,6 +42,12 @@ def expand_query(query):
         if plain in lowered:
             extra.extend(entry["expands_to"])
     return query if not extra else f"{query} {' '.join(extra)}"
+
+
+def strip_question_words(query):
+    """Remove the question-only words listed in QUESTION_WORDS (see above)."""
+    kept = [w for w in query.split() if w.lower().strip("?.,!") not in QUESTION_WORDS]
+    return " ".join(kept) if kept else query
 
 
 def split_source(source_id, meta, text):
@@ -118,7 +129,7 @@ class Retriever:
         slots are filled by overall score.
         balanced=False: plain ranking by score, with no source guarantee.
         """
-        query_vector = self.vectorizer.transform([expand_query(query)])
+        query_vector = self.vectorizer.transform([expand_query(strip_question_words(query))])
         scores = cosine_similarity(query_vector, self.matrix)[0]
 
         first_pass = []
