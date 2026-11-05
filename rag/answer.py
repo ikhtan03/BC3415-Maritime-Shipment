@@ -169,11 +169,15 @@ def call_openai(prompt):
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY is not set. Set it, or use --dry-run.")
     client = OpenAI(api_key=api_key)
+    options = {}
+    # Some OpenAI models accept only the default temperature, so it is sent only when OPENAI_TEMPERATURE is set.
+    if os.getenv("OPENAI_TEMPERATURE"):
+        options["temperature"] = float(os.getenv("OPENAI_TEMPERATURE"))
     response = client.chat.completions.create(
         model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
-        temperature=0,
+        **options,
     )
     content = response.choices[0].message.content
     if not content:
