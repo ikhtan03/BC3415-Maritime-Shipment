@@ -5,6 +5,7 @@ No shipment_truth or answer_key is used by the validator.
 """
 import argparse
 import json
+import re
 from pathlib import Path
 
 REQUIRED = ('bill_of_lading', 'commercial_invoice', 'packing_list', 'dangerous_goods_declaration')
@@ -14,7 +15,7 @@ def clean(value):
     if value is None:
         return None
     if isinstance(value, str):
-        value = value.strip()
+        value = re.sub(r'^CLASS\s+', '', value.strip(), flags=re.IGNORECASE)
         return value.upper() if value else None
     return value
 
@@ -37,7 +38,7 @@ def check_pair(documents, field, reference, comparison, issue_type, action):
     }]
 
 
-def validate(documents):
+def validate(documents, uploaded=None):
     """Evaluate required document presence and selected comparable fields.
 
     Missing individual fields are not treated as required until field-level rules
@@ -49,9 +50,21 @@ def validate(documents):
         if not isinstance(fields, dict):
             raise TypeError(f'{doc} must map to a field dictionary')
 
+    uploaded = set(uploaded or [])
     findings = []
     for doc in REQUIRED:
-        if doc not in documents:
+        if doc in documents:
+            continue
+        if doc in uploaded:
+            # The PDF was received but not extracted, so it cannot be said to be missing.
+            findings.append({
+                'finding_type': 'extraction_failed',
+                'affected_document': doc,
+                'affected_field': None,
+                'expected_action': 're_run_extraction',
+                'explanation': f'{doc} was uploaded but could not be extracted; re-run extraction before judging it.'
+            })
+        else:
             findings.append({
                 'finding_type': 'missing_document',
                 'affected_document': doc,

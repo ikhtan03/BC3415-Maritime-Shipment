@@ -111,7 +111,14 @@ def main():
 
         # The validator expects document-type -> extracted-fields mapping,
         # not the entire extraction wrapper.
-        validation_result = validate(documents)
+        # Uploaded PDFs, by file name, so a document that was uploaded but not extracted is reported
+        # as an extraction failure rather than a missing document.
+        uploaded_types = {
+            Path(item.get("filename", "")).stem
+            for item in extraction_result.get("upload_inventory", [])
+            if isinstance(item, dict) and item.get("filename")
+        }
+        validation_result = validate(documents, uploaded=uploaded_types)
 
         if not isinstance(validation_result, dict):
             raise TypeError(
