@@ -8,18 +8,22 @@ This summary is for the report. It separates fair tests from tests that have bee
 |---|---|---|
 | Original 10 questions (`test_retrieve.py`) | Used for development | 10 of 10 right source first |
 | Holdout 2, 15 fresh questions (`test_retrieve_holdout2.py`) | Run once, then used as a regression check | Right source first: 13 of 15. Right source in top 3: 15 of 15 |
+| v3, 8 fresh list-item questions (`test_retrieve_v3.py`) | Fresh when first run; now used | Right passage first: 7 of 8. In top 3: 8 of 8 |
+| v4, 4 questions in the shisha wording (`test_retrieve_v4.py`) | Fresh when first run; now used | Right passage first: 1 of 4 before the fix, 4 of 4 after. In top 3: 4 of 4 before and after |
+| v5, 5 unseen questions in the shisha wording (`test_retrieve_v5.py`) | Fair test of the fix | Right passage first: 0 of 5 before, 3 of 5 after. In top 3: 2 of 5 before, 5 of 5 after |
 
-Holdout 2 is now seen. Its numbers are only a regression check for later changes, not a fair test of the current system.
+Holdout 2, v3, v4 and v5 have all been seen now, so they are regression checks for later changes, not fair tests of the current system. v5 was written before the fix and is the only fair measure of it, but the word list in the fix was chosen after looking at v4's failures.
 
-Known retrieval misses:
+Known retrieval misses after the fix:
+- v5: "Is electronic cigarette hardware allowed to be imported into Singapore?" and "Is an obscene video tape allowed to be imported into Singapore?" put the right passage in the top 3 but not first.
 - "What is the phone number for the MPA hazmat team?" ranks a different passage first. The right passage is in the top 3.
 - "I am not sure whether my cargo counts as dangerous. Who should I ask first?" ranks the UNECE form first. The right passage is in the top 3.
-- "Is shisha allowed to be imported into Singapore?" does not return the shisha passage (`customs_controlled_prohibited_imports#5`) in the top 3. The model then correctly says the passages don't cover shisha.
 - "Which goods are classed as dutiable goods?" returned the wrong passage in an earlier run. It hasn't been re-checked since the retrieval changes.
 
 Changes that affected retrieval:
 - Each passage now carries its section heading in its text, so a rule split from its heading keeps the words that name its topic.
 - Balanced search takes up to two passages per source first, instead of one. This let the MPA page's bulk-notice rule rank in the top 3. The bulk-notice question was used to diagnose this, so it is not a fair test.
+- Question-only words ("allowed", "import", "singapore") are removed from the query before searching (`strip_question_words`). This fixed the import-wording misses, including the shisha question, which now returns the right passage first. Passages are not changed.
 
 ## 2. Answers (writing a cited answer from the passages)
 
