@@ -25,6 +25,18 @@ Changes that affected retrieval:
 - Balanced search takes up to two passages per source first, instead of one. This let the MPA page's bulk-notice rule rank in the top 3. The bulk-notice question was used to diagnose this, so it is not a fair test.
 - Question-only words ("allowed", "import", "singapore") are removed from the query before searching (`strip_question_words`). This fixed the import-wording misses, including the shisha question, which now returns the right passage first. Passages are not changed.
 
+**Shipper's declaration (UNECE form, pages 201-202).** Three fresh sets, each written before its measurement.
+
+| Set | Before | Notes |
+|---|---|---|
+| v6 (5 questions) | 3 of 5 first, 3 of 5 top 3 | Now seen |
+| v7 (5 questions) | 3 of 5 first, 3 of 5 top 3 | Now seen; a glossary change made it 2 of 5 first, so it was reverted |
+| v8 (5 questions) | 3 of 5 first, 3 of 5 top 3 | Fresh. Adding each UNECE page's title as its heading left it at 3 of 5, so it was reverted |
+
+The shipper's declaration rule is retrieved in the top 3 about three times in five. Recorded as a known weakness, not fixed.
+
+**Adapter on real pipeline reports.** The adapter flags a "missing" document as inconclusive when it was uploaded, which is what S01 and S05 need. It was run on all six reports with a stub model, not a live one.
+
 ## 2. Answers (writing a cited answer from the passages)
 
 **Set v2 (9 fresh questions plus 1 negative control), full re-run after the checker fixes.** The set was run once before the checker fixes and once after. The second run is the one reported here. It is a re-run, because the set has already been seen. Results are in `rag/tests/answer_set_v2_results.csv`.
