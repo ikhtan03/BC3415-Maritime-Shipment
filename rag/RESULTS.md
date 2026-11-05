@@ -14,7 +14,8 @@ Holdout 2 is now seen. Its numbers are only a regression check for later changes
 Known retrieval misses:
 - "What is the phone number for the MPA hazmat team?" ranks a different passage first. The right passage is in the top 3.
 - "I am not sure whether my cargo counts as dangerous. Who should I ask first?" ranks the UNECE form first. The right passage is in the top 3.
-- The question "Which goods are classed as dutiable goods?" returned the wrong passage in an earlier run. It hasn't been re-checked since the retrieval changes.
+- "Is shisha allowed to be imported into Singapore?" does not return the shisha passage (`customs_controlled_prohibited_imports#5`) in the top 3. The model then correctly says the passages don't cover shisha.
+- "Which goods are classed as dutiable goods?" returned the wrong passage in an earlier run. It hasn't been re-checked since the retrieval changes.
 
 Changes that affected retrieval:
 - Each passage now carries its section heading in its text, so a rule split from its heading keeps the words that name its topic.
@@ -22,19 +23,17 @@ Changes that affected retrieval:
 
 ## 2. Answers (writing a cited answer from the passages)
 
-**Set v2 (9 fresh questions plus 1 negative control), first live run.** This is the fairest answer test so far, but it has now been seen.
+**Set v2 (9 fresh questions plus 1 negative control), full re-run after the checker fixes.** The set was run once before the checker fixes and once after. The second run is the one reported here. It is a re-run, because the set has already been seen. Results are in `rag/tests/answer_set_v2_results.csv`.
 
 | Outcome | Count | Detail |
 |---|---|---|
-| Substantively correct | 8 of 9 that ran | Includes the negative control, which was correctly declined |
-| Partly correct | 1 | The customs penalty answer left out the 12-month imprisonment term |
-| No answer | 1 | Shisha question: repeated 503 errors from the model. Re-run pending |
+| Correct | 9 of 10 | Includes the negative control, which was correctly declined |
+| Partly correct | 1 | Customs penalty answer left out the 12-month imprisonment term |
+| Wrong | 1 | Shisha question: retrieval missed the passage, so the model said the sources don't cover it |
 
-Checker flags in this run: 3, all false alarms.
-- Bracketed citation IDs (2 cases): the model copied the brackets from the prompt.
-- A trailing comma after a money figure (1 case).
+Checker flags before the fixes: 3, all false alarms (bracketed citation IDs, a trailing comma after a money figure). After the fixes (commit `74ec7b5`), the RIEA and codes answers pass. These fixes are tested but the checker has not been re-run against the saved quotes.
 
-Both were fixed in commit `74ec7b5`. The fixes are tested but have not been re-run against the model, since the saved answers didn't keep the quotes.
+The first (pre-fix) run is not kept as a separate file. It is described above only.
 
 **Set 1 (13 questions), earlier live run, before the heading change.** 12 of 13 status correct, 11 of 13 fully right from search to answer, and no invented quotes. This set has been used for development, so it is not a fair test.
 
@@ -50,7 +49,7 @@ Known answer failures:
 ## 4. Limits to state in the report
 
 - The test sets are small: 10 to 15 questions each, so one or two results change the percentages a lot.
-- Some sets have been used for development, so their scores are optimistic. Only the holdout 2 and v2 sets were kept apart from development, and both have now been seen.
+- Some sets have been used for development, so their scores are optimistic. Holdout 2 and v2 were kept apart from development at first, but both have now been seen.
 - The checks confirm that quotes and figures appear in the passages the model was given. They can't catch an answer that leaves out part of the rule, or a rule that was never retrieved.
 - Live answer results depend on the model being available. Repeated 503 errors mean some questions have no result.
 - The UNECE form has not been checked by hand.
