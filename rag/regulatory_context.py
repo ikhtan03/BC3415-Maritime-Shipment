@@ -56,12 +56,29 @@ def regulatory_context(finding, retriever, model=None):
     }
 
 
+def uploaded_document_types(report):
+    """Document types whose PDF was in the upload inventory, from the file names (for example
+    "dangerous_goods_declaration.pdf" -> "dangerous_goods_declaration")."""
+    inventory = report.get("extraction", {}).get("upload_inventory", []) or []
+    return {Path(item.get("filename", "")).stem for item in inventory if isinstance(item, dict)}
+
+
 def attach_context(report, retriever, model=None):
     """Return a copy of a validation report with regulatory_context added to each finding.
 
-    The findings' status, the validation status and regulatory_compliance are not changed.
+    A "missing document" finding whose PDF was uploaded is inconclusive, not missing: the file was
+    received but not extracted (the pipeline's own review notes say to check the inventory). It gets
+    no regulatory question. The findings' status, the validation status and regulatory_compliance
+    are not changed.
     """
     updated = copy.deepcopy(report)
+    uploaded = uploaded_document_types(report)
     for finding in updated.get("validation", {}).get("findings", []):
-        finding["regulatory_context"] = regulatory_context(finding, retriever, model=model)
+        if finding.get("finding_type") == "missing_document" and finding.get("affected_document") in uploaded:
+            finding["regulatory_context"] = {
+                "status": "inconclusive",
+                "reason": "The PDF was uploaded but not extracted, so it cannot be said to be missing. Check the extraction metadata.",
+            }
+        else:
+            finding["regulatory_context"] = regulatory_context(finding, retriever, model=model)
     return updated

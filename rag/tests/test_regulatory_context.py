@@ -63,5 +63,21 @@ check("each finding gets regulatory_context",
 check("finding fields are unchanged",
       {k: v for k, v in attached["validation"]["findings"][1].items() if k != "regulatory_context"} == dg_class)
 
+# a missing DGD whose PDF was uploaded is inconclusive, not a regulatory question
+uploaded_report = {
+    "extraction": {"upload_inventory": [{"filename": "dangerous_goods_declaration.pdf"}]},
+    "validation": {"findings": [dict(missing_dgd)], "regulatory_compliance": "not_assessed"},
+}
+ctx = R.attach_context(uploaded_report, retriever, model=stub)["validation"]["findings"][0]["regulatory_context"]
+check("uploaded but unextracted DGD is inconclusive, not a regulatory question", ctx["status"] == "inconclusive")
+
+# a missing DGD that was not uploaded still gets the regulatory question
+not_uploaded_report = {
+    "extraction": {"upload_inventory": []},
+    "validation": {"findings": [dict(missing_dgd)], "regulatory_compliance": "not_assessed"},
+}
+ctx = R.attach_context(not_uploaded_report, retriever, model=stub)["validation"]["findings"][0]["regulatory_context"]
+check("a DGD that was not uploaded still gets the regulatory question", ctx["status"] != "inconclusive" and ctx["status"] != "not_applicable")
+
 print(f"\n{'all checks passed' if not FAILS else str(len(FAILS)) + ' failed'}")
 raise SystemExit(1 if FAILS else 0)
