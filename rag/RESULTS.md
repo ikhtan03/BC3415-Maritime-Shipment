@@ -33,11 +33,13 @@ Changes that affected retrieval:
 |---|---|---|
 | Correct | 9 of 10 | Includes the negative control, which was correctly declined |
 | Partly correct | 1 | Customs penalty answer left out the 12-month imprisonment term |
-| Wrong | 1 | Shisha question: retrieval missed the passage, so the model said the sources don't cover it |
+| Wrong | 0 | The shisha question was wrong before the retrieval fix (missed passage). Re-run after the fix: correct, see below |
 
 Checker flags before the fixes: 3, all false alarms (bracketed citation IDs, a trailing comma after a money figure). After the fixes (commit `74ec7b5`), the RIEA and codes answers pass. These fixes are tested but the checker has not been re-run against the saved quotes.
 
 The first (pre-fix) run is not kept as a separate file. It is described above only.
+
+**Shisha re-run (`rag/tests/shisha_rerun.json`), after the retrieval fix (`79b31fb`).** Supported, cited `customs_controlled_prohibited_imports#5`, answer "No, shisha is listed as a prohibited good for import into Singapore." Status correct, source correct, no facts missing. This is a re-run of a question that has already been seen, so it is a regression check, not a fresh result. Results are in `rag/tests/shisha_rerun_results.csv`.
 
 **Set 1 (13 questions), earlier live run, before the heading change.** 12 of 13 status correct, 11 of 13 fully right from search to answer, and no invented quotes. This set has been used for development, so it is not a fair test.
 

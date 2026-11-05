@@ -1,0 +1,2 @@
+question,status,status_ok,cited_ids,source_ok,facts_missing,verification_problems,answer
+Is shisha allowed to be imported into Singapore?,supported,PASS,customs_controlled_prohibited_imports#5,PASS,,,"No, shisha is listed as a prohibited good for import into Singapore."
