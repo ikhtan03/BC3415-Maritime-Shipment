@@ -196,7 +196,7 @@ def main():
         # compliance status are not changed. A failed model call is recorded on its finding.
         if report["validation"].get("findings"):
             print("\nAttaching regulatory context...")
-            report = attach_context(report, Retriever.from_corpus())
+            report = attach_context(report, Retriever.from_corpus(), documents=documents)
 
         save_json(report_json_path, report)
 
