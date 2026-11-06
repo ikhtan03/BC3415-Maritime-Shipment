@@ -29,6 +29,7 @@ if str(BACKEND_DIR) not in sys.path:
 from extract_documents import extract_shipment
 from validator import validate
 from verification import reextractor, verify
+from triage import triage
 
 # Regulatory context (RAG): the answer code and corpus live in Backend/rag.
 RAG_DIR = BACKEND_DIR / "rag"
@@ -135,6 +136,9 @@ def main():
             verified = verify(documents, uploaded_types, reextractor(pdf_folder, extract_shipment))
             validation_result = verified["validation"]
             validation_result["verification_rounds"] = verified["rounds"]
+
+        # Triage: a suggested priority and whether a person should review. Recommendation only.
+        validation_result["triage"] = triage(validation_result)
 
         if not isinstance(validation_result, dict):
             raise TypeError(
