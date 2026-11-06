@@ -55,5 +55,28 @@ check("'18,500 kg' matches 18500", V.clean("18,500 kg") == V.clean(18500))
 check("'18500' matches 18500", V.clean("18500") == V.clean(18500))
 check("text values are not turned into numbers", V.clean("MSCU6639878") == "MSCU6639878")
 
+# a partial set: checks that need a missing document are reported as not completed, never as passed
+partial = V.validate({"packing_list": {"gross_cargo_weight_kg": 18500, "container_id": "X1"}})
+not_done = {c["check"]: c for c in partial["checks_not_completed"]}
+check("a missing document leaves the weight check not completed",
+      "Gross cargo weight" in not_done and "bill_of_lading is missing" in not_done["Gross cargo weight"]["reason"])
+check("a missing document leaves the class check not completed", "Dangerous goods class" in not_done)
+check("a check that did not run is not reported as a finding",
+      not any(f["finding_type"] in ("weight_mismatch", "dg_class_conflict") for f in partial["findings"]))
+
+full = {
+    "bill_of_lading": {"gross_cargo_weight_kg": 18500, "container_id": "X1", "dg_class": "3"},
+    "commercial_invoice": {},
+    "packing_list": {"gross_cargo_weight_kg": 18500, "container_id": "X1"},
+    "dangerous_goods_declaration": {"dg_class": "3"},
+}
+check("a complete set with agreeing values has no checks left undone", V.validate(full)["checks_not_completed"] == [])
+
+unreadable = dict(full)
+unreadable["packing_list"] = {"container_id": "X1"}
+gap = {c["check"]: c for c in V.validate(unreadable)["checks_not_completed"]}
+check("an unreadable weight field is reported as not completed",
+      "Gross cargo weight" in gap and "gross_cargo_weight_kg could not be read from packing_list" in gap["Gross cargo weight"]["reason"])
+
 print(f"\n{'all checks passed' if not FAILS else str(len(FAILS)) + ' failed'}")
 raise SystemExit(1 if FAILS else 0)

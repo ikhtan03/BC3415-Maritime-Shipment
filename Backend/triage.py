@@ -11,6 +11,12 @@ Rules:
 """
 
 POLICY_VERSION = "prototype-v1 (illustrative)"
+PHRASE = {
+    "weight_mismatch": "The gross cargo weight differs between documents.",
+    "container_mismatch": "The container ID differs between documents.",
+    "dg_class_conflict": "The dangerous goods class differs between documents.",
+    "missing_document": "A required document is missing.",
+}
 NOTE = ("Prototype triage recommendation, not legally defined classification. All findings warrant "
         "verification; the absence of findings is not a compliance clearance.")
 
@@ -21,18 +27,21 @@ def triage(validation):
     types = [f["finding_type"] for f in findings]
 
     if not findings:
-        priority, review, reasons = "low", False, ["no findings"]
+        priority, review, reasons = "low", False, ["No findings were detected."]
     elif "dg_class_conflict" in types or len(findings) >= 2:
         priority, review = "high", True
-        reasons = [f"{len(findings)} finding(s)" if len(findings) >= 2 else "dangerous goods class conflict"]
+        if len(findings) >= 2:
+            reasons = ["Several findings were detected: " + ", ".join(PHRASE.get(t, t) for t in types)]
+        else:
+            reasons = ["The dangerous goods class differs between documents."]
     else:
         priority, review = "medium", True
-        reasons = [f"{types[0]} needs checking"]
-    if "extraction_failed" in types and "extraction failed" not in " ".join(reasons):
+        reasons = [PHRASE.get(types[0], "A finding needs checking.")]
+    if "extraction_failed" in types:
         if priority == "low":
             priority = "medium"
         review = True
-        reasons.append("an uploaded document could not be extracted, so the result is inconclusive")
+        reasons.append("An uploaded document could not be read, so the result is incomplete.")
 
     return {
         "policy_version": POLICY_VERSION,

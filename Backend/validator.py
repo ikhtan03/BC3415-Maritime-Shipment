@@ -91,9 +91,33 @@ def validate(documents, uploaded=None):
     findings += check_pair(documents, 'dg_class', 'bill_of_lading',
                            'dangerous_goods_declaration', 'dg_class_conflict', 'qualified_human_review')
 
+    # Comparisons that could not run: a document or field they need is missing or unreadable.
+    # These are reported separately, so a check that did not run is never shown as a pass.
+    comparisons = [
+        ('Gross cargo weight', 'gross_cargo_weight_kg', 'bill_of_lading', 'packing_list'),
+        ('Container ID', 'container_id', 'packing_list', 'bill_of_lading'),
+        ('Dangerous goods class', 'dg_class', 'bill_of_lading', 'dangerous_goods_declaration'),
+    ]
+    checks_not_completed = []
+    for label, field, reference, comparison in comparisons:
+        problems = []
+        for doc in (reference, comparison):
+            if doc not in documents:
+                problems.append(f'{doc} is missing')
+            elif clean(documents[doc].get(field)) is None:
+                problems.append(f'{field} could not be read from {doc}')
+        if problems:
+            checks_not_completed.append({
+                'check': label,
+                'field': field,
+                'documents': [reference, comparison],
+                'reason': '; '.join(problems)
+            })
+
     # Do not infer legal clearance from the absence of discrepancies.
     return {
         'findings': findings,
+        'checks_not_completed': checks_not_completed,
         'issue_count': len(findings),
         'review_recommended': bool(findings),
         'qualified_human_review': any(f['expected_action'] == 'qualified_human_review' for f in findings),
