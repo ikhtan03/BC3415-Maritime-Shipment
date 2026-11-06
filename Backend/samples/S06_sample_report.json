@@ -1,0 +1,446 @@
+{
+  "project": "PortDoc AI",
+  "generated_at_utc": "2026-10-27T10:51:53.186069+00:00",
+  "input": {
+    "pdf_folder": "C:\\Users\\ikhta\\OneDrive\\Documents\\EUR\\Year 4\\Exchange\\BC3415 AI in Accounting & Finance\\Maritime Group Project\\BC3415-Maritime-Shipment\\data\\test_cases\\S06_multiple_errors",
+    "uploaded_pdf_count": 4,
+    "identified_pdf_count": 4,
+    "extracted_document_count": 4
+  },
+  "extraction": {
+    "upload_inventory": [
+      {
+        "filename": "bill_of_lading.pdf",
+        "path": "C:\\Users\\ikhta\\OneDrive\\Documents\\EUR\\Year 4\\Exchange\\BC3415 AI in Accounting & Finance\\Maritime Group Project\\BC3415-Maritime-Shipment\\data\\test_cases\\S06_multiple_errors\\bill_of_lading.pdf",
+        "document_type": "bill_of_lading",
+        "status": "extracted",
+        "error": null
+      },
+      {
+        "filename": "commercial_invoice.pdf",
+        "path": "C:\\Users\\ikhta\\OneDrive\\Documents\\EUR\\Year 4\\Exchange\\BC3415 AI in Accounting & Finance\\Maritime Group Project\\BC3415-Maritime-Shipment\\data\\test_cases\\S06_multiple_errors\\commercial_invoice.pdf",
+        "document_type": "commercial_invoice",
+        "status": "extracted",
+        "error": null
+      },
+      {
+        "filename": "dangerous_goods_declaration.pdf",
+        "path": "C:\\Users\\ikhta\\OneDrive\\Documents\\EUR\\Year 4\\Exchange\\BC3415 AI in Accounting & Finance\\Maritime Group Project\\BC3415-Maritime-Shipment\\data\\test_cases\\S06_multiple_errors\\dangerous_goods_declaration.pdf",
+        "document_type": "dangerous_goods_declaration",
+        "status": "extracted",
+        "error": null
+      },
+      {
+        "filename": "packing_list.pdf",
+        "path": "C:\\Users\\ikhta\\OneDrive\\Documents\\EUR\\Year 4\\Exchange\\BC3415 AI in Accounting & Finance\\Maritime Group Project\\BC3415-Maritime-Shipment\\data\\test_cases\\S06_multiple_errors\\packing_list.pdf",
+        "document_type": "packing_list",
+        "status": "extracted",
+        "error": null
+      }
+    ],
+    "extraction_metadata": {
+      "bill_of_lading": {
+        "source_pdf": "bill_of_lading.pdf",
+        "document_type": "bill_of_lading",
+        "fields": {
+          "document_reference": "BL-DEMO-001",
+          "shipment_date": "2026-10-15",
+          "shipper": "Meridian Components Sdn Bhd (FICTIONAL)",
+          "consignee": "Harbour Tech Pte Ltd (FICTIONAL)",
+          "carrier": "Example Ocean Lines (FICTIONAL)",
+          "vessel": "DEMO MERIDIAN",
+          "voyage": "DM102A",
+          "port_of_loading": "Port Klang, Malaysia",
+          "port_of_discharge": "Singapore",
+          "container_id": "MSCU6639883",
+          "seal_number": "SEAL-DEMO-104",
+          "cargo_description": "Paint products, packaged in steel drums (illustrative DG\ncargo)",
+          "package_count": 100,
+          "gross_cargo_weight_kg": 18500,
+          "un_number": "UN1263",
+          "dg_class": "3"
+        },
+        "provenance": {
+          "document_reference": {
+            "page": 1,
+            "quote": "REFERENCE: BL-DEMO-001"
+          },
+          "shipment_date": {
+            "page": 1,
+            "quote": "Document Date\n2026-10-15"
+          },
+          "shipper": {
+            "page": 1,
+            "quote": "Meridian Components Sdn Bhd (FICTIONAL)"
+          },
+          "consignee": {
+            "page": 1,
+            "quote": "Harbour Tech Pte Ltd (FICTIONAL)"
+          },
+          "carrier": {
+            "page": 1,
+            "quote": "Example Ocean Lines (FICTIONAL)"
+          },
+          "vessel": {
+            "page": 1,
+            "quote": "DEMO MERIDIAN"
+          },
+          "voyage": {
+            "page": 1,
+            "quote": "DM102A"
+          },
+          "port_of_loading": {
+            "page": 1,
+            "quote": "Port Klang, Malaysia"
+          },
+          "port_of_discharge": {
+            "page": 1,
+            "quote": "Singapore"
+          },
+          "container_id": {
+            "page": 1,
+            "quote": "MSCU6639883"
+          },
+          "seal_number": {
+            "page": 1,
+            "quote": "SEAL-DEMO-104"
+          },
+          "cargo_description": {
+            "page": 1,
+            "quote": "Paint products, packaged in steel drums (illustrative DG\ncargo)"
+          },
+          "package_count": {
+            "page": 1,
+            "quote": "Number of Packages\n100"
+          },
+          "gross_cargo_weight_kg": {
+            "page": 1,
+            "quote": "Gross Cargo Mass (kg)\n18,500 kg"
+          },
+          "un_number": {
+            "page": 1,
+            "quote": "UN1263"
+          },
+          "dg_class": {
+            "page": 1,
+            "quote": "Declared DG Class\n3"
+          }
+        },
+        "extraction_notes": [
+          "Field 'shipment_date' was populated using the printed 'Document Date' as no separate shipment date was labeled.",
+          "Gross cargo weight was parsed from '18,500 kg' to numeric 18500."
+        ],
+        "status": "extracted"
+      },
+      "commercial_invoice": {
+        "source_pdf": "commercial_invoice.pdf",
+        "document_type": "commercial_invoice",
+        "fields": {
+          "invoice_number": "INV-DEMO-001",
+          "shipment_date": null,
+          "shipper": "Meridian Components Sdn Bhd (FICTIONAL)",
+          "consignee": "Harbour Tech Pte Ltd (FICTIONAL)",
+          "port_of_loading": "Port Klang, Malaysia",
+          "port_of_discharge": "Singapore",
+          "cargo_description": "Paint products, packaged in steel drums (illustrative DG\ncargo)",
+          "package_count": 100,
+          "gross_cargo_weight_kg": 18500,
+          "hs_code": "NOT_VERIFIED",
+          "declared_invoice_value_usd": "USD 54,000.00"
+        },
+        "provenance": {
+          "invoice_number": {
+            "page": 1,
+            "quote": "INV-DEMO-001"
+          },
+          "shipment_date": {
+            "page": 1,
+            "quote": ""
+          },
+          "shipper": {
+            "page": 1,
+            "quote": "Meridian Components Sdn Bhd (FICTIONAL)"
+          },
+          "consignee": {
+            "page": 1,
+            "quote": "Harbour Tech Pte Ltd (FICTIONAL)"
+          },
+          "port_of_loading": {
+            "page": 1,
+            "quote": "Port Klang, Malaysia"
+          },
+          "port_of_discharge": {
+            "page": 1,
+            "quote": "Singapore"
+          },
+          "cargo_description": {
+            "page": 1,
+            "quote": "Paint products, packaged in steel drums (illustrative DG\ncargo)"
+          },
+          "package_count": {
+            "page": 1,
+            "quote": "100"
+          },
+          "gross_cargo_weight_kg": {
+            "page": 1,
+            "quote": "18,500 kg"
+          },
+          "hs_code": {
+            "page": 1,
+            "quote": "NOT_VERIFIED"
+          },
+          "declared_invoice_value_usd": {
+            "page": 1,
+            "quote": "USD 54,000.00"
+          }
+        },
+        "extraction_notes": [
+          "No specific shipment date is stated; document only provides 'Document Date: 2026-10-15', so shipment_date is set to null.",
+          "HS Code is explicitly stated as 'NOT_VERIFIED'."
+        ],
+        "status": "extracted"
+      },
+      "dangerous_goods_declaration": {
+        "source_pdf": "dangerous_goods_declaration.pdf",
+        "document_type": "dangerous_goods_declaration",
+        "fields": {
+          "document_reference": "BL-DEMO-001",
+          "shipper": "Meridian Components Sdn Bhd (FICTIONAL)",
+          "consignee": "Harbour Tech Pte Ltd (FICTIONAL)",
+          "carrier": "Example Ocean Lines (FICTIONAL)",
+          "seal_number": "SEAL-DEMO-104",
+          "vessel": "DEMO MERIDIAN",
+          "voyage": "DM102A",
+          "port_of_loading": "Port Klang, Malaysia",
+          "port_of_discharge": "Singapore",
+          "container_id": "MSCU6639878",
+          "un_number": "UN1263",
+          "proper_shipping_name": "PAINT",
+          "dg_class": "CLASS 9",
+          "package_count": 100,
+          "package_type": "Steel drums",
+          "gross_cargo_weight_kg": 18500
+        },
+        "provenance": {
+          "document_reference": {
+            "page": 1,
+            "quote": "BL-DEMO-001"
+          },
+          "shipper": {
+            "page": 1,
+            "quote": "Meridian Components Sdn Bhd (FICTIONAL)"
+          },
+          "consignee": {
+            "page": 1,
+            "quote": "Harbour Tech Pte Ltd (FICTIONAL)"
+          },
+          "carrier": {
+            "page": 1,
+            "quote": "Example Ocean Lines (FICTIONAL)"
+          },
+          "seal_number": {
+            "page": 1,
+            "quote": "SEAL-DEMO-104"
+          },
+          "vessel": {
+            "page": 1,
+            "quote": "DEMO MERIDIAN"
+          },
+          "voyage": {
+            "page": 1,
+            "quote": "DM102A"
+          },
+          "port_of_loading": {
+            "page": 1,
+            "quote": "Port Klang, Malaysia"
+          },
+          "port_of_discharge": {
+            "page": 1,
+            "quote": "Singapore"
+          },
+          "container_id": {
+            "page": 1,
+            "quote": "MSCU6639878"
+          },
+          "un_number": {
+            "page": 1,
+            "quote": "UN1263"
+          },
+          "proper_shipping_name": {
+            "page": 1,
+            "quote": "PAINT"
+          },
+          "dg_class": {
+            "page": 1,
+            "quote": "CLASS 9"
+          },
+          "package_count": {
+            "page": 1,
+            "quote": "100 Steel drums"
+          },
+          "package_type": {
+            "page": 1,
+            "quote": "Steel drums"
+          },
+          "gross_cargo_weight_kg": {
+            "page": 1,
+            "quote": "Gross mass: 18,500 kg"
+          }
+        },
+        "extraction_notes": [
+          "Vessel and voyage are presented together as 'DEMO MERIDIAN / DM102A' under box 10.",
+          "DG line appears as 'UN1263 PAINT CLASS 9' in box 14.",
+          "Gross cargo weight appears as 'Gross mass: 18,500 kg' in box 14 and '18500 kg' in box 19; extracted as numeric 18500."
+        ],
+        "status": "extracted"
+      },
+      "packing_list": {
+        "source_pdf": "packing_list.pdf",
+        "document_type": "packing_list",
+        "fields": {
+          "document_reference": "PL-DEMO-001",
+          "shipper": "Meridian Components Sdn Bhd (FICTIONAL)",
+          "consignee": "Harbour Tech Pte Ltd (FICTIONAL)",
+          "container_id": "MSCU6639878",
+          "seal_number": "SEAL-DEMO-104",
+          "cargo_description": "Paint products, packaged in steel drums (illustrative DG\ncargo)",
+          "package_count": 100,
+          "package_type": "Steel drums (illustrative; verify packaging suitability)",
+          "gross_cargo_weight_kg": 19500,
+          "net_cargo_weight_kg": 17000
+        },
+        "provenance": {
+          "document_reference": {
+            "page": 1,
+            "quote": "REFERENCE: PL-DEMO-001"
+          },
+          "shipper": {
+            "page": 1,
+            "quote": "Meridian Components Sdn Bhd (FICTIONAL)"
+          },
+          "consignee": {
+            "page": 1,
+            "quote": "Harbour Tech Pte Ltd (FICTIONAL)"
+          },
+          "container_id": {
+            "page": 1,
+            "quote": "MSCU6639878"
+          },
+          "seal_number": {
+            "page": 1,
+            "quote": "SEAL-DEMO-104"
+          },
+          "cargo_description": {
+            "page": 1,
+            "quote": "Paint products, packaged in steel drums (illustrative DG\ncargo)"
+          },
+          "package_count": {
+            "page": 1,
+            "quote": "100"
+          },
+          "package_type": {
+            "page": 1,
+            "quote": "Steel drums (illustrative; verify packaging suitability)"
+          },
+          "gross_cargo_weight_kg": {
+            "page": 1,
+            "quote": "19,500 kg"
+          },
+          "net_cargo_weight_kg": {
+            "page": 1,
+            "quote": "17,000 kg"
+          }
+        },
+        "extraction_notes": [
+          "The document also lists a Transport Document Reference 'BL-DEMO-001'; 'PL-DEMO-001' was selected as the packing list reference.",
+          "Gross and net cargo weights were converted to numeric values from printed values '19,500 kg' and '17,000 kg'."
+        ],
+        "status": "extracted"
+      }
+    },
+    "extraction_output_file": "C:\\Users\\ikhta\\OneDrive\\Documents\\EUR\\Year 4\\Exchange\\BC3415 AI in Accounting & Finance\\Maritime Group Project\\BC3415-Maritime-Shipment\\outputs\\S06\\extracted_documents.json"
+  },
+  "validation": {
+    "findings": [
+      {
+        "finding_type": "weight_mismatch",
+        "affected_document": "packing_list",
+        "affected_field": "gross_cargo_weight_kg",
+        "expected_action": "verify_or_correct_documents",
+        "reference_document": "bill_of_lading",
+        "reference_value": 18500,
+        "observed_value": 19500,
+        "explanation": "gross_cargo_weight_kg differs between bill_of_lading (18500) and packing_list (19500).",
+        "regulatory_context": {
+          "status": "not_applicable",
+          "reason": "This finding is a document comparison; the Singapore corpus does not cover it."
+        }
+      },
+      {
+        "finding_type": "container_mismatch",
+        "affected_document": "bill_of_lading",
+        "affected_field": "container_id",
+        "expected_action": "verify_or_correct_documents",
+        "reference_document": "packing_list",
+        "reference_value": "MSCU6639878",
+        "observed_value": "MSCU6639883",
+        "explanation": "container_id differs between packing_list (MSCU6639878) and bill_of_lading (MSCU6639883).",
+        "regulatory_context": {
+          "status": "not_applicable",
+          "reason": "This finding is a document comparison; the Singapore corpus does not cover it."
+        }
+      },
+      {
+        "finding_type": "dg_class_conflict",
+        "affected_document": "dangerous_goods_declaration",
+        "affected_field": "dg_class",
+        "expected_action": "qualified_human_review",
+        "reference_document": "bill_of_lading",
+        "reference_value": "3",
+        "observed_value": "CLASS 9",
+        "explanation": "dg_class differs between bill_of_lading (3) and dangerous_goods_declaration (CLASS 9).",
+        "regulatory_context": {
+          "status": "supported",
+          "question": "What must a shipper specify about the hazard class of dangerous goods?",
+          "answer": "The shipper must specify the dangerous goods’ hazard class.",
+          "quotes": [
+            {
+              "id": "mmdg_form_p201_onward#4",
+              "quote": "you must specify: UN No., proper shipping name, hazard class, packing group (where assigned)"
+            }
+          ],
+          "sources": [
+            {
+              "id": "mmdg_form_p201_onward#4",
+              "source": "UN ST/SG/AC.10/1/Rev.24 Volume II (Multimodal Dangerous Goods Form), PDF pages 201 onward",
+              "url": "https://unece.org/sites/default/files/2025-09/ST_SG_AC10_1_Rev24e_Vol_II_1.pdf"
+            }
+          ],
+          "problems": [],
+          "warnings": []
+        }
+      }
+    ],
+    "issue_count": 3,
+    "review_recommended": true,
+    "qualified_human_review": true,
+    "status": "issues_detected",
+    "regulatory_compliance": "not_assessed",
+    "triage": {
+      "policy_version": "prototype-v1 (illustrative)",
+      "suggested_priority": "high",
+      "human_review_recommended": true,
+      "reasons": [
+        "3 finding(s)"
+      ],
+      "note": "Prototype triage recommendation, not legally defined classification. All findings warrant verification; the absence of findings is not a compliance clearance."
+    }
+  },
+  "review_notes": [
+    "Automated field checks are not a determination of regulatory compliance. Human review is required.",
+    "A missing document finding may be inconclusive if a PDF failed extraction or could not be identified. Check the upload inventory and extraction metadata before treating a document as genuinely missing."
+  ],
+  "sample": {
+    "label": "Saved sample from a live run of the regulatory check. Not a fresh pipeline run."
+  }
+}

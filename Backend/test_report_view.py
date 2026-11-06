@@ -1,4 +1,4 @@
-"""Checks for the report view. Offline: the reports are built here.
+"""Checks for the report view. Offline: the reports are built here, or the labelled sample is used.
 
 Run from the project root:
     python Backend/test_report_view.py
@@ -27,6 +27,7 @@ check("a clean run says so, without claiming clearance",
       RV.banner(clean)["level"] == "info" and "not a compliance clearance" in RV.banner(clean)["text"])
 check("triage shows priority and review in plain words",
       RV.triage_view(clean)["priority"] == "Low" and RV.triage_view(clean)["review"] == "No review needed")
+check("documents read reads as 'n of n'", RV.documents_read_text(clean) == "4 of 4 documents read")
 
 unread = {"input": {"uploaded_pdf_count": 1, "extracted_document_count": 0},
           "extraction": {"upload_inventory": [{"filename": "packing_list.pdf", "status": "extraction_failed"}]},
@@ -38,22 +39,48 @@ check("the unread file is listed", RV.extraction_view(unread)["failed_files"] ==
 
 with_context = {"input": {"uploaded_pdf_count": 4, "extracted_document_count": 4},
                 "extraction": {"upload_inventory": []},
-                "validation": {"regulatory_compliance": "not_assessed", "findings": [
+                "validation": {"regulatory_compliance": "not_assessed",
+                               "triage": {"suggested_priority": "high", "human_review_recommended": True,
+                                          "reasons": ["dangerous goods class conflict"]},
+                               "findings": [
                     {"finding_type": "dg_class_conflict", "affected_document": "dangerous_goods_declaration",
                      "affected_field": "dg_class", "expected_action": "qualified_human_review",
-                     "explanation": "e",
+                     "reference_document": "bill_of_lading", "reference_value": "3",
+                     "observed_value": "CLASS 9", "explanation": "e",
                      "regulatory_context": {"status": "supported", "question": "Q?", "question_source": "planner",
                                             "answer": "A.", "sources": [{"id": "x", "source": "UNECE", "url": "https://u"}],
+                                            "quotes": [{"id": "x", "quote": "hazard class"}],
                                             "problems": [], "warnings": []}}]}}
-rows = RV.findings_view(with_context)
-check("findings show type, document and action in words",
-      rows[0]["Finding"] == "dg class conflict" and rows[0]["Action"] == "qualified human review")
-reg = RV.regulatory_view(with_context)
-check("regulatory items show the question, answer and source",
-      reg[0]["answer"] == "A." and reg[0]["sources"][0]["url"] == "https://u" and reg[0]["question_source"] == "planner")
-check("the disclaimer is always shown", RV.summary(with_context)["disclaimer"].startswith("This is an academic prototype"))
-check("the compliance status is shown as not assessed", RV.summary(with_context)["compliance"] == "not_assessed")
-check("a report without triage gives no triage view", RV.triage_view({"validation": {}}) is None)
+card = RV.review_cards(with_context)[0]
+check("a card shows the two values side by side",
+      [v["value"] for v in card["values"]] == ["3", "CLASS 9"])
+check("a class conflict is flagged for human review prominently", card["human_review"] is True)
+check("the card gives a next step", "Qualified human review" in card["next_step"])
+check("the regulatory evidence shows the answer, source and quote",
+      card["regulatory"]["answer"] == "A." and card["regulatory"]["sources"][0]["url"] == "https://u"
+      and card["regulatory"]["quotes"][0]["quote"] == "hazard class")
+check("the priority reason is kept", RV.triage_view(with_context)["reasons"] == ["dangerous goods class conflict"])
+
+no_source = RV.regulatory_block({"status": "not_found", "answer": "The passages do not say.", "sources": []})
+check("no source found says so plainly", no_source["message"] == RV.NO_SOURCE)
+not_in_corpus = RV.regulatory_block({"status": "not_applicable"})
+check("a document comparison says no rule applies", "document comparison" in not_in_corpus["message"])
+check("no regulatory context gives no block", RV.regulatory_block(None) is None)
+
+progress = RV.new_progress()
+for line in ["[1/3] Extracting", "Extraction result saved to x", "[2/3] Validating",
+             "Re-checking flagged fields...", "[3/3] Building validation report...",
+             "Attaching regulatory context...", "Validation report saved to y"]:
+    RV.apply_progress_line(line, progress)
+check("the progress lines drive every stage to complete",
+      all(state == "complete" for state in progress.values()))
+check("stages not reached stay 'not run'", RV.new_progress()["read"] == "not run")
+
+sample = RV.load_report(Path(__file__).resolve().parent / "samples" / "S06_sample_report.json")
+view = RV.summary(sample)
+check("the labelled sample loads and shows its three findings", len(view["cards"]) == 3)
+check("the sample keeps compliance as not assessed", view["compliance"] == "not_assessed")
+check("the report can be downloaded as JSON", RV.report_bytes(sample).startswith(b"{"))
 
 print(f"\n{'all checks passed' if not FAILS else str(len(FAILS)) + ' failed'}")
 raise SystemExit(1 if FAILS else 0)
