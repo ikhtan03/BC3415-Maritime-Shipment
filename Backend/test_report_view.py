@@ -27,7 +27,7 @@ check("a clean run says so, without claiming clearance",
       RV.banner(clean)["level"] == "info" and "not a compliance clearance" in RV.banner(clean)["text"])
 check("triage shows priority and review in plain words",
       RV.triage_view(clean)["priority"] == "Low" and RV.triage_view(clean)["review"] == "No review needed")
-check("documents read reads as 'n of n'", RV.documents_read_text(clean) == "4 of 4 documents read")
+check("documents read reads as 'n of n'", RV.documents_read_text(clean) == "4 of 4")
 
 unread = {"input": {"uploaded_pdf_count": 1, "extracted_document_count": 0},
           "extraction": {"upload_inventory": [{"filename": "packing_list.pdf", "status": "extraction_failed"}]},
@@ -79,8 +79,21 @@ check("stages not reached stay 'not run'", RV.new_progress()["read"] == "not run
 sample = RV.load_report(Path(__file__).resolve().parent / "samples" / "S06_sample_report.json")
 view = RV.summary(sample)
 check("the labelled sample loads and shows its three findings", len(view["cards"]) == 3)
-check("the sample keeps compliance as not assessed", view["compliance"] == "not_assessed")
+check("the sample keeps compliance as not assessed", view["compliance"] == "not assessed")
 check("the report can be downloaded as JSON", RV.report_bytes(sample).startswith(b"{"))
+
+check("field names are translated for people",
+      RV.humanize("gross_cargo_weight_kg differs between bill_of_lading (18500) and packing_list (19500).")
+      == "Gross cargo weight differs between Bill of lading (18500) and Packing list (19500).")
+check("a missing value shows as not available", RV.value_text(None) == "Not available" and RV.value_text("") == "Not available")
+check("a slot shows Missing when no file is added", RV.slot_states({})["packing_list"] == "Missing")
+check("a slot shows Uploaded before a check runs", RV.slot_states({"packing_list": True})["packing_list"] == "Uploaded")
+check("a slot shows Reading while the check runs", RV.slot_states({"packing_list": True}, running=True)["packing_list"] == "Reading")
+failed_report = {"input": {"uploaded_pdf_count": 1, "extracted_document_count": 0},
+                 "extraction": {"upload_inventory": [{"filename": "packing_list.pdf", "status": "extraction_failed"}]},
+                 "validation": {"findings": []}}
+check("a slot shows Could not read when extraction failed",
+      RV.slot_states({"packing_list": True}, failed_report)["packing_list"] == "Could not read")
 
 print(f"\n{'all checks passed' if not FAILS else str(len(FAILS)) + ' failed'}")
 raise SystemExit(1 if FAILS else 0)
