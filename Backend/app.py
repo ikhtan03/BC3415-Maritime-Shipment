@@ -99,16 +99,29 @@ def load_retriever():
     return Retriever.from_corpus()
 
 
-def ask_about(question):
-    """Answer one question from the corpus, with citations. Uses one model call."""
+def ask_about(question, topic=None):
+    """Answer one question from the corpus, with citations. Uses one model call.
+
+    topic: the finding's title, added to the question so the search finds the right rules.
+    If nothing answers the question, the closest passages are listed as matches, not answers.
+    """
+    query = f"{topic}: {question}" if topic else question
     try:
         retriever = load_retriever()
-        result = A.answer(question, retriever)
+        result = A.answer(query, retriever)
     except Exception as exc:  # shown to the user without the key or any raw API text
         return {"message": "The question could not be answered right now. Check your model key and quota, then try again.",
-                "detail": redact(str(exc))[:200], "sources": [], "quotes": [], "checks": [], "answer": ""}
+                "detail": redact(str(exc))[:200], "sources": [], "quotes": [], "checks": [], "answer": "", "closest": []}
     passages = {passage["id"]: passage for passage in retriever.passages}
-    return RV.answer_view(result, passages)
+    view = RV.answer_view(result, passages)
+    if view["message"]:
+        view["closest"] = [
+            {"source": hit["source_title"], "url": hit["url"], "text": hit["text"][:220]}
+            for hit in retriever.search(query, k=3)
+        ]
+    else:
+        view["closest"] = []
+    return view
 
 
 def state_html(state):
@@ -197,7 +210,7 @@ def show_results(report, label):
             question = st.text_input("Your question", key=f"q_{index}",
                                      placeholder="For example: What must the declaration state about the class?")
             if st.button("Ask", key=f"ask_{index}") and question.strip():
-                st.session_state.answers[ask_key] = ask_about(question.strip())
+                st.session_state.answers[ask_key] = ask_about(question.strip(), card["title"])
             answer = st.session_state.answers.get(ask_key)
             if answer:
                 if answer.get("message"):
@@ -212,6 +225,10 @@ def show_results(report, label):
                     st.markdown(f"> {quote.get('quote', '')}")
                 if answer.get("corpus_note") and (answer.get("answer") or answer.get("sources")):
                     st.caption(answer["corpus_note"])
+                if answer.get("closest"):
+                    st.caption("Closest passages in the corpus. These are matches to check, not answers to your question.")
+                    for hit in answer["closest"]:
+                        st.markdown(f"- [{hit['source']}]({hit['url']}): {hit['text']}")
 
             reg = card["regulatory"]
             if reg:
