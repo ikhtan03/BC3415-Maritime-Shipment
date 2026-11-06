@@ -16,6 +16,7 @@ PHRASE = {
     "container_mismatch": "The container ID differs between documents.",
     "dg_class_conflict": "The dangerous goods class differs between documents.",
     "missing_document": "A required document is missing.",
+    "extraction_failed": "An uploaded document could not be read, so the result is incomplete.",
 }
 NOTE = ("Prototype triage recommendation, not legally defined classification. All findings warrant "
         "verification; the absence of findings is not a compliance clearance.")
@@ -27,21 +28,19 @@ def triage(validation):
     types = [f["finding_type"] for f in findings]
 
     if not findings:
-        priority, review, reasons = "low", False, ["No findings were detected."]
-    elif "dg_class_conflict" in types or len(findings) >= 2:
-        priority, review = "high", True
-        if len(findings) >= 2:
-            reasons = ["Several findings were detected: " + ", ".join(PHRASE.get(t, t) for t in types)]
-        else:
-            reasons = ["The dangerous goods class differs between documents."]
+        priority, review = "low", False
+        reasons = ["No findings were detected."]
     else:
-        priority, review = "medium", True
-        reasons = [PHRASE.get(types[0], "A finding needs checking.")]
-    if "extraction_failed" in types:
-        if priority == "low":
-            priority = "medium"
-        review = True
-        reasons.append("An uploaded document could not be read, so the result is incomplete.")
+        if "dg_class_conflict" in types or len(findings) >= 2:
+            priority, review = "high", True
+        else:
+            priority, review = "medium", True
+        # One plain reason per kind of finding, with no repeats.
+        reasons = [PHRASE.get(t, "A finding needs checking.") for t in dict.fromkeys(types)]
+        if "extraction_failed" in types:
+            # An unreadable document makes the result incomplete, so it needs a person to look.
+            priority = "medium" if priority == "low" else priority
+            review = True
 
     return {
         "policy_version": POLICY_VERSION,

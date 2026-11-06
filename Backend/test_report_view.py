@@ -118,5 +118,20 @@ check("a check that could not run names the document it needed",
       "could not be checked" in not_done[0]["text"] and "Bill of lading" in not_done[0]["needed"])
 check("the compliance line is always not assessed", RV.summary(partial_report)["compliance"] == "not assessed")
 
+one_unread = {"input": {"uploaded_pdf_count": 1, "extracted_document_count": 0},
+              "extraction": {"upload_inventory": [{"filename": "bill_of_lading.pdf", "status": "extraction_failed"}]},
+              "validation": {"regulatory_compliance": "not_assessed", "findings": [
+                  {"finding_type": "extraction_failed", "affected_document": "bill_of_lading", "expected_action": "re_run_extraction", "explanation": "x"},
+                  {"finding_type": "missing_document", "affected_document": "packing_list", "expected_action": "verify_or_correct_documents", "explanation": "x"}]}}
+done = RV.apply_outcome(RV.finish_progress(RV.new_progress(), completed=True), one_unread)
+check("reading is incomplete when a document could not be read", done["read"] == "incomplete")
+view = RV.summary(one_unread)
+check("missing documents are listed on their own, not as review cards",
+      view["missing"] == ["Packing list"] and all(c["title"] != RV.TITLES["missing_document"] for c in view["cards"]))
+check("the unread document is still a review card", any(c["title"] == RV.TITLES["extraction_failed"] for c in view["cards"]))
+import triage as TR  # noqa: E402
+reasons = TR.triage(one_unread["validation"])["reasons"]
+check("triage reasons are not repeated", len(reasons) == len(set(reasons)))
+
 print(f"\n{'all checks passed' if not FAILS else str(len(FAILS)) + ' failed'}")
 raise SystemExit(1 if FAILS else 0)

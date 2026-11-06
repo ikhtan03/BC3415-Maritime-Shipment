@@ -56,6 +56,13 @@ h2 { font-size: 1.25rem; margin-top: 1.6rem; }
 .stage-progress { color: #18324A; font-weight: 600; }
 .stage-notrun { color: #5A6772; }
 .stage-notcompleted { color: #B64B4B; font-weight: 600; }
+.stage-incomplete { color: #B77932; font-weight: 600; }
+[data-testid="stFileUploaderDropzone"] { background: #FFFFFF; border: 1px dashed #687681; }
+[data-testid="stFileUploaderDropzone"] * { color: #18324A; }
+[data-testid="stFileUploaderFile"] { background: #FFFFFF; }
+[data-testid="stFileUploaderFile"] * { color: #18324A; }
+[data-testid="stExpander"] summary, [data-testid="stExpander"] summary * { color: #18324A; background: #FFFFFF; }
+[data-testid="stExpander"] { background: #FFFFFF; border-color: #D9DDDF; }
 div.stButton > button[kind="primary"] { background: #2F746F; border-color: #2F746F; color: #FFFFFF; }
 div.stButton > button[kind="primary"]:hover { background: #26605C; border-color: #26605C; color: #FFFFFF; }
 div.stButton > button[kind="secondary"] { color: #2F746F; border-color: #2F746F; background: #FFFFFF; }
@@ -89,7 +96,8 @@ def state_html(state):
 def stage_html(progress):
     """The stages in plain language, each with its status."""
     rows = []
-    css = {"complete": "stage-complete", "in progress": "stage-progress", "not completed": "stage-notcompleted"}
+    css = {"complete": "stage-complete", "in progress": "stage-progress", "not completed": "stage-notcompleted",
+           "incomplete": "stage-incomplete"}
     for key, label in RV.STAGES:
         status = progress[key]
         rows.append(f"<div>{label}: <span class='{css.get(status, 'stage-notrun')}'>{status.capitalize()}</span></div>")
@@ -166,6 +174,12 @@ def show_results(report, label):
                 if reg["answer"] or reg["sources"]:
                     st.caption(reg["corpus_note"])
 
+    if view["missing"]:
+        st.markdown("<h2>Documents not supplied</h2>", unsafe_allow_html=True)
+        st.caption("Checks that need these documents are not complete.")
+        for name in view["missing"]:
+            st.markdown(f"- {name}: not supplied")
+
     if view["not_completed"]:
         st.markdown("<h2>Checks not completed</h2>", unsafe_allow_html=True)
         st.caption("These checks did not run, so they are not passes.")
@@ -223,7 +237,8 @@ def run_check(uploads, slot_boxes, stage_box, previous_report):
         for key, box in slot_boxes.items():
             if present[key]:
                 box.markdown(state_html(states[key]), unsafe_allow_html=True)
-        stage_box.markdown(stage_html(RV.finish_progress(progress, completed=True)), unsafe_allow_html=True)
+        progress = RV.apply_outcome(RV.finish_progress(progress, completed=True), report)
+        stage_box.markdown(stage_html(progress), unsafe_allow_html=True)
     else:
         st.session_state.result = previous_report
         stage_box.markdown(stage_html(RV.finish_progress(progress, completed=False)), unsafe_allow_html=True)

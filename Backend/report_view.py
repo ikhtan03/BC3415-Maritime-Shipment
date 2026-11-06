@@ -141,6 +141,13 @@ def finish_progress(progress, completed):
     return progress
 
 
+def apply_outcome(progress, report):
+    """After a run that finished: reading is incomplete when any uploaded document could not be read."""
+    if extraction_view(report)["failed_files"]:
+        progress["read"] = "incomplete"
+    return progress
+
+
 def type_hint(filename, slot):
     """The document type a file name suggests, if it clearly points to a different slot. A prompt only."""
     name = re.sub(r"[_\-.]+", " ", (filename or "").lower())
@@ -321,14 +328,23 @@ def documents_read_text(report):
     return f"{info['extracted']} of {info['uploaded']}"
 
 
+def missing_documents_view(report):
+    """Document types that were not supplied. Listed on their own, not as findings."""
+    return [DOCUMENT_LABELS.get(f.get("affected_document", ""), NOT_AVAILABLE)
+            for f in report.get("validation", {}).get("findings", [])
+            if f.get("finding_type") == "missing_document"]
+
+
 def summary(report):
     """Everything the screen shows, in one dictionary. Compliance is always 'not assessed'."""
+    cards = review_cards(report)
     return {
         "banner": banner(report),
         "documents_read": documents_read_text(report),
         "extraction": extraction_view(report),
         "triage": triage_view(report),
-        "cards": review_cards(report),
+        "cards": [c for c in cards if c["title"] != TITLES["missing_document"]],
+        "missing": missing_documents_view(report),
         "findings": findings_view(report),
         "not_completed": checks_not_completed_view(report),
         "compliance": "not assessed",
