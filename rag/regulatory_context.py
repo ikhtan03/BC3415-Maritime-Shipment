@@ -16,6 +16,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import answer as A  # noqa: E402
+import planner as P  # noqa: E402
 
 # Questions for findings that have a regulatory side, keyed by finding type. A missing document
 # only has a regulatory side when it is the dangerous goods declaration.
@@ -31,14 +32,19 @@ def question_for(finding):
     return QUESTIONS.get(key) or QUESTIONS.get(finding.get("finding_type"))
 
 
-def regulatory_context(finding, retriever, model=None):
+def regulatory_context(finding, retriever, model=None, planned=None):
     """Return the cited regulatory answer for one finding, or a not_applicable note."""
     question = question_for(finding)
+    question_source = "fixed"
     if question is None:
         return {
             "status": "not_applicable",
             "reason": "This finding is a document comparison; the Singapore corpus does not cover it.",
         }
+    planned_question = (planned or {}).get(P.plan_key(finding))
+    if planned_question:
+        question = planned_question
+        question_source = "planner"
     try:
         result = A.answer(question, retriever, model=model)
     except Exception as exc:  # a failed model call (quota, overload, bad key) must not stop the other findings
@@ -65,6 +71,7 @@ def regulatory_context(finding, retriever, model=None):
         "sources": sources,
         "problems": result.get("problems", []),
         "warnings": result.get("warnings", []),
+        "question_source": question_source,
     }
 
 
@@ -75,7 +82,7 @@ def uploaded_document_types(report):
     return {Path(item.get("filename", "")).stem for item in inventory if isinstance(item, dict)}
 
 
-def attach_context(report, retriever, model=None):
+def attach_context(report, retriever, model=None, documents=None, planner_model=None, use_planner=True):
     """Return a copy of a validation report with regulatory_context added to each finding.
 
     A "missing document" finding whose PDF was uploaded is inconclusive, not missing: the file was
@@ -85,12 +92,21 @@ def attach_context(report, retriever, model=None):
     """
     updated = copy.deepcopy(report)
     uploaded = uploaded_document_types(report)
-    for finding in updated.get("validation", {}).get("findings", []):
+    findings = updated.get("validation", {}).get("findings", [])
+    applicable = [
+        f for f in findings
+        if question_for(f) is not None
+        and not (f.get("finding_type") == "missing_document" and f.get("affected_document") in uploaded)
+    ]
+    planned = {}
+    if use_planner and applicable:
+        planned = P.plan_questions(applicable, P.shipment_facts(documents), model=planner_model or model)
+    for finding in findings:
         if finding.get("finding_type") == "missing_document" and finding.get("affected_document") in uploaded:
             finding["regulatory_context"] = {
                 "status": "inconclusive",
                 "reason": "The PDF was uploaded but not extracted, so it cannot be said to be missing. Check the extraction metadata.",
             }
         else:
-            finding["regulatory_context"] = regulatory_context(finding, retriever, model=model)
+            finding["regulatory_context"] = regulatory_context(finding, retriever, model=model, planned=planned)
     return updated

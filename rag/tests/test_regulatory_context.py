@@ -9,6 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import regulatory_context as R  # noqa: E402
+import planner as P  # noqa: E402
 from retrieve import Retriever  # noqa: E402
 
 FAILS = []
@@ -97,6 +98,27 @@ check("a failed model call does not stop attach_context", len(out) == 2)
 check("the failed finding is recorded as an error", out[1]["regulatory_context"]["status"] == "error")
 check("the error names the failure", "503" in out[1]["regulatory_context"]["problems"][0])
 check("the other findings are still attached", out[0]["regulatory_context"]["status"] == "not_applicable")
+
+# the planner's question is used when valid; the fixed question is used otherwise
+DG_ONLY = {"findings": [dict(dg_class)], "regulatory_compliance": "not_assessed"}
+planner_text = "What hazard class must a shipper state for dangerous goods?"
+key_dg = P.plan_key(dg_class)
+planner_ok = lambda prompt: {"questions": [{"key": key_dg, "question": planner_text}]}  # noqa: E731
+used = R.attach_context({"extraction": {"upload_inventory": []}, "validation": dict(DG_ONLY)},
+                        retriever, model=stub, documents={"dangerous_goods_declaration": {"dg_class": "CLASS 9"}},
+                        planner_model=planner_ok)["validation"]["findings"][0]["regulatory_context"]
+check("a valid planned question is used and recorded as the planner's", used["question"] == planner_text and used["question_source"] == "planner")
+
+planner_bad = lambda prompt: {"questions": [{"key": key_dg, "question": "12345 6789"}]}  # noqa: E731
+fallback = R.attach_context({"extraction": {"upload_inventory": []}, "validation": dict(DG_ONLY)},
+                            retriever, model=stub, planner_model=planner_bad)["validation"]["findings"][0]["regulatory_context"]
+check("an invalid planned question falls back to the fixed question",
+      fallback["question"] == R.question_for(dg_class) and fallback["question_source"] == "fixed")
+
+planner_fails = lambda prompt: (_ for _ in ()).throw(RuntimeError("503 (test)"))  # noqa: E731
+fallback2 = R.attach_context({"extraction": {"upload_inventory": []}, "validation": dict(DG_ONLY)},
+                             retriever, model=stub, planner_model=planner_fails)["validation"]["findings"][0]["regulatory_context"]
+check("a failed planner call falls back to the fixed question", fallback2["question_source"] == "fixed")
 
 print(f"\n{'all checks passed' if not FAILS else str(len(FAILS)) + ' failed'}")
 raise SystemExit(1 if FAILS else 0)
