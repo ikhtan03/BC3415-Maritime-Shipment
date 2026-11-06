@@ -37,6 +37,10 @@ The shipper's declaration rule is retrieved in the top 3 about three times in fi
 
 **Adapter on real pipeline reports.** The adapter flags a "missing" document as inconclusive when it was uploaded, which is what S01 and S05 need. It was run on all six reports with a stub model, not a live one.
 
+**Dangerous goods class question in the adapter (wording change, `a68b5b2`).** The first live run on S06 returned "not found" for the old wording, "What must a dangerous goods declaration state about the class of the goods?", although the UNECE shipper's declaration requires the hazard class. Three wordings were compared on retrieval. The new one, "What must a shipper specify about the hazard class of dangerous goods?", puts the hazard class passage first.
+
+The shipper's declaration sets show that retrieval for this rule is still unreliable with other wordings. v9 (5 questions, used to choose the wording): right passage first 2 of 5, in top 3 2 of 5. v10 (5 confirmation questions): first 1 of 5, in top 3 3 of 5. The new wording itself was checked directly, not in v9 or v10. The live answer for the new wording has not been run yet.
+
 ## 2. Answers (writing a cited answer from the passages)
 
 **Set v2 (9 fresh questions plus 1 negative control), full re-run after the checker fixes.** The set was run once before the checker fixes and once after. The second run is the one reported here. It is a re-run, because the set has already been seen. Results are in `rag/tests/answer_set_v2_results.csv`.
