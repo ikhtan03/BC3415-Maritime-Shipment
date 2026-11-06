@@ -53,6 +53,7 @@ def regulatory_context(finding, retriever, model=None):
         "quotes": result.get("quotes", []),
         "sources": sources,
         "problems": result.get("problems", []),
+        "warnings": result.get("warnings", []),
     }
 
 

@@ -79,5 +79,9 @@ not_uploaded_report = {
 ctx = R.attach_context(not_uploaded_report, retriever, model=stub)["validation"]["findings"][0]["regulatory_context"]
 check("a DGD that was not uploaded still gets the regulatory question", ctx["status"] != "inconclusive" and ctx["status"] != "not_applicable")
 
+# review warnings from the answer step reach the report (a not_found answer with passages retrieved)
+check("regulatory context passes on the review warnings",
+      "warnings" in dg_result and isinstance(dg_result["warnings"], list))
+
 print(f"\n{'all checks passed' if not FAILS else str(len(FAILS)) + ' failed'}")
 raise SystemExit(1 if FAILS else 0)
