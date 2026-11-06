@@ -1,0 +1,47 @@
+{
+  "_about": "Plain-language words mapped to the terms the Singapore and UN sources use. When a question contains the plain word, the regulatory terms are added to the search. Every entry names the corpus source where the regulatory term appears, so each mapping can be checked. Entries were written after the retrieval misses in rag/tests were reviewed; they are not an independent test.",
+  "lab report": {
+    "expands_to": ["certificate of analysis"],
+    "found_in": "mpa_declaring_dangerous_goods"
+  },
+  "fertiliser": {
+    "expands_to": ["ammonium nitrate"],
+    "found_in": "mmdg_form_p201_onward"
+  },
+  "fertilizer": {
+    "expands_to": ["ammonium nitrate"],
+    "found_in": "mmdg_form_p201_onward"
+  },
+  "e-cigarette": {
+    "expands_to": ["imitation tobacco products"],
+    "found_in": "customs_controlled_prohibited_imports"
+  },
+  "e-cigarettes": {
+    "expands_to": ["imitation tobacco products"],
+    "found_in": "customs_controlled_prohibited_imports"
+  },
+  "vape": {
+    "expands_to": ["imitation tobacco products", "vaporisers"],
+    "found_in": "customs_controlled_prohibited_imports"
+  },
+  "vapes": {
+    "expands_to": ["imitation tobacco products", "vaporisers"],
+    "found_in": "customs_controlled_prohibited_imports"
+  },
+  "not allowed": {
+    "expands_to": ["prohibited"],
+    "found_in": "customs_controlled_prohibited_imports"
+  },
+  "banned": {
+    "expands_to": ["prohibited"],
+    "found_in": "customs_controlled_prohibited_imports"
+  },
+  "coming in": {
+    "expands_to": ["arrival"],
+    "found_in": "mpa_declaring_dangerous_goods"
+  },
+  "tell the port": {
+    "expands_to": ["declaration", "submitted"],
+    "found_in": "mpa_declaring_dangerous_goods"
+  }
+}

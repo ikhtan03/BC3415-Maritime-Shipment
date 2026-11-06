@@ -30,6 +30,13 @@ from extract_documents import extract_shipment
 from validator import validate
 from verification import reextractor, verify
 
+# Regulatory context (RAG): the answer code and corpus live in Backend/rag.
+RAG_DIR = BACKEND_DIR / "rag"
+if str(RAG_DIR) not in sys.path:
+    sys.path.insert(0, str(RAG_DIR))
+from regulatory_context import attach_context  # noqa: E402
+from retrieve import Retriever  # noqa: E402
+
 
 def save_json(file_path, data):
     """Save data as readable UTF-8 JSON."""
@@ -180,6 +187,12 @@ def main():
                 ),
             ],
         }
+
+        # Regulatory context: a cited answer for each finding with a regulatory side. Findings and the
+        # compliance status are not changed. A failed model call is recorded on its finding.
+        if report["validation"].get("findings"):
+            print("\nAttaching regulatory context...")
+            report = attach_context(report, Retriever.from_corpus())
 
         save_json(report_json_path, report)
 

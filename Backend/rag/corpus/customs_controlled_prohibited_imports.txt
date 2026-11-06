@@ -1,0 +1,50 @@
+Source: Controlled and Prohibited Goods for Imports | Singapore Customs
+Authority: Singapore Customs
+URL: https://www.customs.gov.sg/doing-business/import-operations/import-procedures/controlled-and-prohibited-goods-for-imports/
+Retrieved: 2026-11-01
+
+Controlled and Prohibited Goods for Imports | Singapore Customs
+Home
+Doing Business
+Import Operations
+Import Procedures
+Controlled and Prohibited Goods for Imports
+# Controlled and Prohibited Goods for Imports
+Understand the requirements for importing controlled goods and goods prohibited from importing to Singapore.
+Last updated on 24 February 2026
+Download the full version of the infographics [PDF, 3.00 MB] (opens in new tab) to view the linked resources.
+## Controlled Goods
+Controlled goods require proper authorisation (advance notification, licence or certificate approval) from Competent Authorities (CA) before they may be imported to Singapore. You are advised to check if the goods are controlled using the description of the goods, Harmonised System (HS) code or CA product code via the HS/CA Product Code Checker (opens in new tab). If the item is subject to control, you may check directly with the respective CAs on their licensing requirements. You may download the list of CAs' contact information via the HS/CA Product Code Checker.
+## Prohibited Goods
+The goods listed below cannot be imported into Singapore.
+Prohibited Goods
+Competent Authority
+Chewing gum (excluding Health Sciences Authority approved oral dental and medicinal chewing gum)
+Singapore Customs
+1. Rhinoceros horn (worked, unworked or prepared and the any part, power or waste of such horn)
+2. Endangered species of wildlife and products derived from the body of such animals
+National Parks Board
+Telecommunication equipment
+(Examples of prohibited telecommunication equipment (opens in new tab))
+1. Scanning receivers
+2. Military communication equipment
+3. Telephone voice changing equipment
+4. Radio-communication equipment operating in frequency bands 880-915 MHz, 925-960 MHz, 1900-1980 MHz and 2110-2170 MHz except cellular mobile phones or such other equipment approved by Info-communications Media Development Authority of Singapore
+5. Radio-communication jamming devices operating in any frequency band
+6. Obscene articles, publications and video tapes or discs
+7. Seditious and treasonable materials
+Info-communications Media Development Authority of Singapore
+1. Chewing tobacco (loose leaf chewing tobacco, plug chewing tobacco, twist chewing tobacco, tobacco bits intended for chewing
+2. Imitation tobacco products (electronic cigarettes, vaporisers) and components of imitation tobacco products
+3. Shisha
+4. Smokeless cigars, smokeless cigarillos or smokeless cigarettes
+5. Dissolvable tobacco or nicotine
+6. Any product containing nicotine or tobacco that may be used topically for application, by implant or injected into any parts of the body
+7. Any solution or substance, of which tobacco or nicotine is a constituent, that is intended to be used with an electronic nicotine delivery system or vaporizers
+8. Nasal snuff
+9. Oral snuff
+10. Gutkha, khaini and zarda
+Tobacco Regulation Branch, Health Sciences Authority
+Controlled drugs listed under 4th Schedule of Misuse of Drugs Regulation
+Health Products Regulation Group, Health Sciences Authority
+A comprehensive list of United Nations Security Council (UNSC) sanctions is available on the UNSC Sanctions Committees website.

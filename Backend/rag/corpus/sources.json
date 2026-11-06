@@ -1,0 +1,76 @@
+{
+  "mpa_declaring_dangerous_goods": {
+    "title": "Declaring Dangerous Goods | Maritime and Port Authority of Singapore",
+    "url": "https://www.mpa.gov.sg/port-marine-ops/operations/gas-free-hazardous-cargo-info/declaring-dangerous-goods",
+    "authority": "Maritime and Port Authority of Singapore (MPA)",
+    "retrieved": "2026-11-01",
+    "text_file": "mpa_declaring_dangerous_goods.txt",
+    "line_count": 73,
+    "headings": [
+      "# Declaring Dangerous Goods (DG) and Hazardous and Noxious Substances (HNS)",
+      "### Frequently Asked Questions"
+    ]
+  },
+  "customs_controlled_prohibited_imports": {
+    "title": "Controlled and Prohibited Goods for Imports | Singapore Customs",
+    "url": "https://www.customs.gov.sg/doing-business/import-operations/import-procedures/controlled-and-prohibited-goods-for-imports/",
+    "authority": "Singapore Customs",
+    "retrieved": "2026-11-01",
+    "text_file": "customs_controlled_prohibited_imports.txt",
+    "line_count": 45,
+    "headings": [
+      "# Controlled and Prohibited Goods for Imports",
+      "## Controlled Goods",
+      "## Prohibited Goods"
+    ]
+  },
+  "customs_import_procedures_overview": {
+    "title": "Import Procedures Overview | Singapore Customs",
+    "url": "https://www.customs.gov.sg/doing-business/import-operations/import-procedures/import-procedures-overview/",
+    "authority": "Singapore Customs",
+    "retrieved": "2026-11-01",
+    "text_file": "customs_import_procedures_overview.txt",
+    "line_count": 159,
+    "headings": [
+      "# Import Procedures Overview",
+      "## Import Requirements",
+      "## Who Is the Importer",
+      "## Before Importation",
+      "## Useful Links",
+      "## Errors and Offences",
+      "## Examples of Common Errors and Corrective Actions",
+      "## Errors in Import Permits",
+      "## Import Permit Not Utilised",
+      "## Import Permit Already Utilised",
+      "## Errors by Approved Major Exporter Scheme (MES) Traders",
+      "## Incorrect Information Declared on In-Non-Payment (Approved Premises/Schemes) Permit",
+      "## Wrong Importer Name and UEN Declared",
+      "## Errors in an In-Payment Permit",
+      "## In-Payment Permit Taken Instead of INP-APS Permit for MES Trader",
+      "## Wrong Importer Declared",
+      "## Wrong Value of Goods Declared",
+      "## Wrong Information Declared and Cannot Be Amended",
+      "## Examples of Common Offences",
+      "## Incorrect Declaration on Value of Goods",
+      "## Failure to Declare Imported Goods",
+      "## Failure to Produce Trade Documents",
+      "## Failure to Produce Permit for Clearance",
+      "## Unauthorised Tampering",
+      "## Penalties Upon Conviction for Key Offences",
+      "## Best Practices",
+      "## Do",
+      "## Do Not",
+      "## For More Information"
+    ]
+  },
+  "mmdg_form_p201_onward": {
+    "title": "UN ST/SG/AC.10/1/Rev.24 Volume II (Multimodal Dangerous Goods Form), PDF pages 201 onward",
+    "authority": "International Maritime Organization (IMO) and UN Economic Commission for Europe (UNECE)",
+    "url": "https://unece.org/sites/default/files/2025-09/ST_SG_AC10_1_Rev24e_Vol_II_1.pdf",
+    "start_page": 201,
+    "retrieved": "2026-11-01",
+    "text_file": "mmdg_form_p201_onward.txt",
+    "pages_kept": 242,
+    "pages_skipped_blank": 8
+  }
+}
