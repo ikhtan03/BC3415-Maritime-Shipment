@@ -39,7 +39,7 @@ The shipper's declaration rule is retrieved in the top 3 about three times in fi
 
 **Dangerous goods class question in the adapter (wording change, `a68b5b2`).** The first live run on S06 returned "not found" for the old wording, "What must a dangerous goods declaration state about the class of the goods?", although the UNECE shipper's declaration requires the hazard class. Three wordings were compared on retrieval. The new one, "What must a shipper specify about the hazard class of dangerous goods?", puts the hazard class passage first.
 
-The shipper's declaration sets show that retrieval for this rule is still unreliable with other wordings. v9 (5 questions, used to choose the wording): right passage first 2 of 5, in top 3 2 of 5. v10 (5 confirmation questions): first 1 of 5, in top 3 3 of 5. The new wording itself was checked directly, not in v9 or v10. The live answer for the new wording has not been run yet.
+The shipper's declaration sets show that retrieval for this rule is still unreliable with other wordings. v9 (5 questions, used to choose the wording): right passage first 2 of 5, in top 3 2 of 5. v10 (5 confirmation questions): first 1 of 5, in top 3 3 of 5. The new wording itself was checked directly, not in v9 or v10. The live run on S06 with the new wording returned "supported": "The shipper must specify the dangerous goods' hazard class," citing the UNECE form (PDF pages 201 onward) with its URL. Regulatory compliance stays not assessed. One question, one model run, so it is a single check, not a measure of reliability.
 
 ## 2. Answers (writing a cited answer from the passages)
 
