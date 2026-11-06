@@ -83,5 +83,20 @@ check("a DGD that was not uploaded still gets the regulatory question", ctx["sta
 check("regulatory context passes on the review warnings",
       "warnings" in dg_result and isinstance(dg_result["warnings"], list))
 
+# a failed model call is recorded on its finding; the other findings are still attached
+def broken(prompt):
+    raise RuntimeError("503 UNAVAILABLE (test)")
+
+
+broken_report = {
+    "extraction": {"upload_inventory": []},
+    "validation": {"findings": [dict(weight), dict(dg_class)], "regulatory_compliance": "not_assessed"},
+}
+out = R.attach_context(broken_report, retriever, model=broken)["validation"]["findings"]
+check("a failed model call does not stop attach_context", len(out) == 2)
+check("the failed finding is recorded as an error", out[1]["regulatory_context"]["status"] == "error")
+check("the error names the failure", "503" in out[1]["regulatory_context"]["problems"][0])
+check("the other findings are still attached", out[0]["regulatory_context"]["status"] == "not_applicable")
+
 print(f"\n{'all checks passed' if not FAILS else str(len(FAILS)) + ' failed'}")
 raise SystemExit(1 if FAILS else 0)

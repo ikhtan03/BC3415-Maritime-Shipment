@@ -39,7 +39,18 @@ def regulatory_context(finding, retriever, model=None):
             "status": "not_applicable",
             "reason": "This finding is a document comparison; the Singapore corpus does not cover it.",
         }
-    result = A.answer(question, retriever, model=model)
+    try:
+        result = A.answer(question, retriever, model=model)
+    except Exception as exc:  # a failed model call (quota, overload, bad key) must not stop the other findings
+        return {
+            "status": "error",
+            "question": question,
+            "answer": "",
+            "quotes": [],
+            "sources": [],
+            "problems": [f"model call failed: {str(exc)[:200]}"],
+            "warnings": [],
+        }
     by_id = {p["id"]: p for p in retriever.passages}
     sources = []
     for cid in result.get("citations", []):
