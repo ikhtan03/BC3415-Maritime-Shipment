@@ -20,7 +20,7 @@ import answer as A  # noqa: E402
 # Questions for findings that have a regulatory side, keyed by finding type. A missing document
 # only has a regulatory side when it is the dangerous goods declaration.
 QUESTIONS = {
-    "dg_class_conflict": "What must a dangerous goods declaration state about the class of the goods?",
+    "dg_class_conflict": "What must a shipper specify about the hazard class of dangerous goods?",
     ("missing_document", "dangerous_goods_declaration"): "What must a dangerous goods declaration contain?",
 }
 
