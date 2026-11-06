@@ -9,6 +9,7 @@ Run from the project root, in the PowerShell window where your model key is set:
 Layout and wording live here. The report logic is in report_view.py.
 """
 import hashlib
+import os
 import re
 import subprocess
 import sys
@@ -26,6 +27,10 @@ SAMPLE = BACKEND / "samples" / "S06_sample_report.json"
 SAMPLE_LABEL = "Sample case: saved demo results from a live run. This is not a fresh pipeline run."
 LIVE_LABEL = "Result of the check you just ran."
 MAX_SIZE = "200 MB per file (the Streamlit default)"
+# Live checks and questions need a Gemini key in the environment. A public page without one shows the sample case only.
+LIVE_AVAILABLE = bool(os.environ.get("GEMINI_API_KEY"))
+LIVE_NOTE = ("Live checks are not available on this page. Load the sample case, or run the app on your own "
+             "computer with your own key.")
 
 RAG_DIR = BACKEND / "rag"
 if str(RAG_DIR) not in sys.path:
@@ -214,7 +219,7 @@ def show_results(report, label):
             st.caption("Each question uses one model call from your quota. Answers come only from the project's limited corpus.")
             question = st.text_input("Your question", key=f"q_{index}",
                                      placeholder="For example: What must the declaration state about the class?")
-            if st.button("Ask", key=f"ask_{index}") and question.strip():
+            if st.button("Ask", key=f"ask_{index}", disabled=not LIVE_AVAILABLE) and question.strip():
                 st.session_state.answers[ask_key] = ask_about(question.strip(), card["title"])
             answer = st.session_state.answers.get(ask_key)
             if answer:
@@ -342,9 +347,12 @@ with tab_check:
 
     st.markdown("<h2>2. Check the shipment</h2>", unsafe_allow_html=True)
     left, right = st.columns(2)
-    check_clicked = left.button("Check shipment", type="primary", disabled=not uploads or bool(duplicate_names),
+    check_clicked = left.button("Check shipment", type="primary",
+                                disabled=not uploads or bool(duplicate_names) or not LIVE_AVAILABLE,
                                 width="stretch")
     sample_clicked = right.button("Load sample case", type="secondary", width="stretch")
+    if not LIVE_AVAILABLE:
+        st.markdown(f"<div class='muted'>{LIVE_NOTE}</div>", unsafe_allow_html=True)
     if not uploads:
         st.markdown("<div class='muted'>Add at least one document to run a check, or load the sample case.</div>",
                     unsafe_allow_html=True)
