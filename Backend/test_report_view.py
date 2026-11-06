@@ -24,7 +24,7 @@ clean = {"input": {"uploaded_pdf_count": 4, "extracted_document_count": 4},
                         "triage": {"suggested_priority": "low", "human_review_recommended": False,
                                    "reasons": ["no findings"]}}}
 check("a clean run says so, without claiming clearance",
-      RV.banner(clean)["level"] == "info" and "not a compliance clearance" in RV.banner(clean)["text"])
+      RV.banner(clean)["level"] == "info" and "No findings" in RV.banner(clean)["text"])
 check("triage shows priority and review in plain words",
       RV.triage_view(clean)["priority"] == "Low" and RV.triage_view(clean)["review"] == "No review needed")
 check("documents read reads as 'n of n'", RV.documents_read_text(clean) == "4 of 4")
@@ -53,9 +53,9 @@ with_context = {"input": {"uploaded_pdf_count": 4, "extracted_document_count": 4
                                             "problems": [], "warnings": []}}]}}
 card = RV.review_cards(with_context)[0]
 check("a card shows the two values side by side",
-      [v["value"] for v in card["values"]] == ["3", "CLASS 9"])
+      [v["value"] for v in card["values"]] == ["Class 3", "Class 9"])
 check("a class conflict is flagged for human review prominently", card["human_review"] is True)
-check("the card gives a next step", "Qualified human review" in card["next_step"])
+check("the card explains the class conflict and asks a qualified reviewer", "qualified reviewer" in card["explanation"])
 check("the regulatory evidence shows the answer, source and quote",
       card["regulatory"]["answer"] == "A." and card["regulatory"]["sources"][0]["url"] == "https://u"
       and card["regulatory"]["quotes"][0]["quote"] == "hazard class")
@@ -64,7 +64,7 @@ check("the priority reason is kept", RV.triage_view(with_context)["reasons"] == 
 no_source = RV.regulatory_block({"status": "not_found", "answer": "The passages do not say.", "sources": []})
 check("no source found says so plainly", no_source["message"] == RV.NO_SOURCE)
 not_in_corpus = RV.regulatory_block({"status": "not_applicable"})
-check("a document comparison says no rule applies", "document comparison" in not_in_corpus["message"])
+check("a document comparison shows no regulatory block", not_in_corpus is None)
 check("no regulatory context gives no block", RV.regulatory_block(None) is None)
 
 progress = RV.new_progress()
@@ -94,6 +94,29 @@ failed_report = {"input": {"uploaded_pdf_count": 1, "extracted_document_count": 
                  "validation": {"findings": []}}
 check("a slot shows Could not read when extraction failed",
       RV.slot_states({"packing_list": True}, failed_report)["packing_list"] == "Could not read")
+
+check("a file named like a packing list in the declaration slot prompts a type check",
+      RV.type_hint("packing_list.pdf", "dangerous_goods_declaration") == "packing_list")
+check("a file in its own slot gives no prompt", RV.type_hint("packing_list.pdf", "packing_list") is None)
+check("an unclear file name gives no prompt", RV.type_hint("scan0001.pdf", "packing_list") is None)
+check("the same file in two slots is detected", RV.same_file_slots({"packing_list": "abc", "bill_of_lading": "abc",
+                                                                   "commercial_invoice": "xyz"}) == {"packing_list", "bill_of_lading"})
+check("different files are not flagged", RV.same_file_slots({"packing_list": "abc", "bill_of_lading": "def"}) == set())
+states = RV.slot_states({"packing_list": True}, mismatch={"packing_list": True})
+check("a slot whose file may be the wrong type says so", states["packing_list"] == "Type may not match")
+prog = RV.finish_progress({"read": "in progress", "check": "complete", "verify": "not run", "triage": "not run",
+                           "context": "not run", "report": "not run"}, completed=False)
+check("a failed run marks in-progress stages not completed, never in progress",
+      prog["read"] == "not completed" and "in progress" not in prog.values())
+check("a value in kilograms shows its unit", RV.value_text("18500", "gross_cargo_weight_kg") == "18500 kg")
+check("a class value reads as Class n", RV.value_text("CLASS 9", "dg_class") == "Class 9")
+partial_report = {"validation": {"findings": [], "checks_not_completed": [
+    {"check": "Gross cargo weight", "field": "gross_cargo_weight_kg", "documents": ["bill_of_lading", "packing_list"],
+     "reason": "bill_of_lading is missing"}]}}
+not_done = RV.summary(partial_report)["not_completed"]
+check("a check that could not run names the document it needed",
+      "could not be checked" in not_done[0]["text"] and "Bill of lading" in not_done[0]["needed"])
+check("the compliance line is always not assessed", RV.summary(partial_report)["compliance"] == "not assessed")
 
 print(f"\n{'all checks passed' if not FAILS else str(len(FAILS)) + ' failed'}")
 raise SystemExit(1 if FAILS else 0)

@@ -2,7 +2,7 @@
 
 No display code here, so these functions can be tested without a browser. The Streamlit app
 (Backend/app.py) only lays out what this module returns. Field names come from the report schema
-written by run_pipeline.py and validator.py; labels for people are translated here.
+written by run_pipeline.py and validator.py; the words shown to people are written here.
 """
 import json
 import re
@@ -10,10 +10,13 @@ from pathlib import Path
 
 DISCLAIMER = ("This prototype provides a document pre-check. It does not assess regulatory compliance "
               "or replace qualified review.")
-NO_SOURCE = "No supporting source found in the current corpus."
-NOT_IN_CORPUS = "This is a document comparison, so no regulatory rule in the corpus applies to it."
+NO_SOURCE = "No relevant source was found in the current corpus."
 NOT_AVAILABLE = "Not available"
 CORPUS_NOTE = "Source: the project's limited corpus of official documents. For human review."
+FAILURE_MESSAGE = ("We couldn't finish reading the documents. Check that the extraction service is available, "
+                   "then try again.")
+UPLOAD_HELP = ("Upload the documents you have. We'll run the checks possible with this set and identify "
+               "anything we could not check.")
 
 DOCUMENT_TYPES = [
     ("bill_of_lading", "Bill of lading"),
@@ -31,19 +34,34 @@ FIELD_LABELS = {
     "port_of_discharge": "Port of discharge",
     "terminal": "Terminal",
 }
+# Words that suggest which document a file is. Used only to prompt a check, never to decide.
+TYPE_WORDS = {
+    "bill_of_lading": ["bill of lading", "bill_of_lading", "b/l", "bl_", "lading"],
+    "commercial_invoice": ["invoice"],
+    "packing_list": ["packing"],
+    "dangerous_goods_declaration": ["declaration", "dgd", "dangerous"],
+}
 TITLES = {
-    "weight_mismatch": "Gross weight differs",
-    "container_mismatch": "Container ID differs",
-    "dg_class_conflict": "Dangerous goods class differs",
+    "weight_mismatch": "Gross weight does not match",
+    "container_mismatch": "Container ID does not match",
+    "dg_class_conflict": "Dangerous-goods class does not match",
     "missing_document": "Document missing",
     "extraction_failed": "Document could not be read",
+}
+EXPLANATIONS = {
+    "weight_mismatch": "The gross cargo weight differs between the bill of lading and the packing list. Check both documents.",
+    "container_mismatch": "The container ID differs between the packing list and the bill of lading. Check both documents.",
+    "dg_class_conflict": ("The two documents list different dangerous-goods classes. Check both documents and ask a "
+                          "qualified reviewer to confirm which information is correct."),
+    "missing_document": "This document was not supplied, so checks that need it could not be completed.",
+    "extraction_failed": "This document was uploaded but could not be read, so checks that need it are incomplete.",
 }
 NEXT_STEP = {
     "weight_mismatch": "Check the gross cargo weight on the bill of lading and the packing list.",
     "container_mismatch": "Check the container ID on the bill of lading and the packing list.",
-    "dg_class_conflict": "Qualified human review: check the dangerous goods class on the bill of lading and the declaration.",
-    "missing_document": "Confirm whether this document was supplied. If it was not, obtain it before submission.",
-    "extraction_failed": "Upload a readable copy of this document (selectable text, not a scan), then run the check again.",
+    "dg_class_conflict": "Review the dangerous-goods class on the bill of lading and the declaration.",
+    "missing_document": "Upload this document if you have it, then run the check again.",
+    "extraction_failed": "Check that the file has selectable text (not a scan), then run the check again.",
 }
 FAILED_STATUSES = {"failed", "extraction_failed", "error", "unidentified", "identification_failed"}
 PRIORITY_LABEL = {"high": "High", "medium": "Medium", "low": "Low"}
@@ -87,11 +105,17 @@ def humanize(text):
     return text
 
 
-def value_text(value):
-    """A value for display, or 'Not available' when the report has none."""
+def value_text(value, field=None):
+    """A value for display, with its unit where the field has one. 'Not available' when missing."""
     if value is None or (isinstance(value, str) and not value.strip()):
         return NOT_AVAILABLE
-    return str(value)
+    text = str(value).strip()
+    if field == "dg_class":
+        number = re.sub(r"^class\s*", "", text, flags=re.IGNORECASE)
+        return f"Class {number}"
+    if field == "gross_cargo_weight_kg" and re.fullmatch(r"[\d,.]+", text):
+        return f"{text} kg"
+    return text
 
 
 def new_progress():
@@ -107,120 +131,43 @@ def apply_progress_line(line, progress):
     return progress
 
 
-def slot_states(uploaded, report=None, running=False):
-    """The state of each document slot: Missing, Uploaded, Reading, Read or Could not read.
+def finish_progress(progress, completed):
+    """After a run ends: stages still in progress are marked not completed, never left as 'in progress'."""
+    if completed:
+        return progress
+    for key in progress:
+        if progress[key] == "in progress":
+            progress[key] = "not completed"
+    return progress
 
-    uploaded: {doc_key: True/False}. report: the result of the last check, if any.
-    """
-    failed = set()
-    read = set()
-    if report:
-        failed = {Path(name).stem for name in extraction_view(report)["failed_files"]}
-        read = {key for key, _ in DOCUMENT_TYPES if key not in failed and uploaded.get(key)}
-    states = {}
-    for key, _ in DOCUMENT_TYPES:
-        if not uploaded.get(key):
-            states[key] = "Missing"
-        elif running:
-            states[key] = "Reading"
-        elif key in failed:
-            states[key] = "Could not read"
-        elif key in read:
-            states[key] = "Read"
+
+def type_hint(filename, slot):
+    """The document type a file name suggests, if it clearly points to a different slot. A prompt only."""
+    name = re.sub(r"[_\-.]+", " ", (filename or "").lower())
+    hinted = [key for key, words in TYPE_WORDS.items() if any(word.replace("_", " ") in name for word in words)]
+    if len(hinted) == 1 and hinted[0] != slot:
+        return hinted[0]
+    return None
+
+
+def identified_types(report):
+    """The document type the pipeline identified for each uploaded file, by file name stem."""
+    inventory = (report or {}).get("extraction", {}).get("upload_inventory", []) or []
+    return {Path(item.get("filename", "")).stem: item.get("document_type")
+            for item in inventory if isinstance(item, dict) and item.get("document_type")}
+
+
+def same_file_slots(fingerprints):
+    """Slots that hold the same file (same content), which would make a misleading comparison."""
+    seen, duplicates = {}, set()
+    for slot, digest in fingerprints.items():
+        if digest is None:
+            continue
+        if digest in seen:
+            duplicates.update({slot, seen[digest]})
         else:
-            states[key] = "Uploaded"
-    return states
-
-
-def banner(report):
-    """A one-line summary of the run, with its completeness."""
-    findings = report.get("validation", {}).get("findings", [])
-    if any(f.get("finding_type") == "extraction_failed" for f in findings):
-        return {"level": "warning",
-                "text": "Incomplete: some documents could not be read, so this check cannot be complete. Upload readable copies and run the check again."}
-    if not findings:
-        return {"level": "info", "text": "No configured issues were found. This is not a compliance clearance."}
-    return {"level": "error", "text": f"{len(findings)} finding(s) need review."}
-
-
-def triage_view(report):
-    """Suggested priority, the review flag and the reasons, if the pipeline produced them."""
-    triage = report.get("validation", {}).get("triage")
-    if not triage:
-        return None
-    return {
-        "priority": PRIORITY_LABEL.get(triage.get("suggested_priority"), NOT_AVAILABLE),
-        "review": "Review recommended" if triage.get("human_review_recommended") else "No review needed",
-        "review_needed": bool(triage.get("human_review_recommended")),
-        "reasons": [humanize(reason) for reason in triage.get("reasons", [])],
-    }
-
-
-def findings_view(report):
-    """One row per finding, for the summary table, with readable labels."""
-    rows = []
-    for f in report.get("validation", {}).get("findings", []):
-        rows.append({
-            "Finding": TITLES.get(f.get("finding_type", ""), f.get("finding_type", "")),
-            "Document": DOCUMENT_LABELS.get(f.get("affected_document", ""), f.get("affected_document", "")),
-            "Field": FIELD_LABELS.get(f.get("affected_field") or "", f.get("affected_field") or NOT_AVAILABLE),
-        })
-    return rows
-
-
-def regulatory_block(context):
-    """The evidence for one finding: the answer, its sources and quotes, or why there is none."""
-    if not context:
-        return None
-    status = context.get("status", "")
-    sources = context.get("sources", [])
-    block = {
-        "status": status,
-        "question": humanize(context.get("question", "")),
-        "question_source": context.get("question_source", ""),
-        "answer": context.get("answer", ""),
-        "sources": sources,
-        "quotes": context.get("quotes", []),
-        "checks": context.get("problems", []),
-        "warnings": context.get("warnings", []),
-        "corpus_note": CORPUS_NOTE,
-        "message": "",
-    }
-    if status == "not_applicable":
-        block["message"] = context.get("reason") or NOT_IN_CORPUS
-    elif status == "error":
-        block["message"] = "The regulatory check could not run: " + "; ".join(context.get("problems", []))
-    elif status in ("not_found", "") or not sources:
-        block["message"] = NO_SOURCE
-    return block
-
-
-def review_cards(report):
-    """One card per finding, with readable labels and the values side by side."""
-    triage = triage_view(report)
-    shipment_review = bool(triage and triage["review_needed"])
-    cards = []
-    for f in report.get("validation", {}).get("findings", []):
-        ftype = f.get("finding_type", "")
-        values = []
-        if f.get("reference_document") is not None:
-            values = [
-                {"document": DOCUMENT_LABELS.get(f["reference_document"], f["reference_document"]),
-                 "value": value_text(f.get("reference_value"))},
-                {"document": DOCUMENT_LABELS.get(f.get("affected_document", ""), f.get("affected_document", "")),
-                 "value": value_text(f.get("observed_value"))},
-            ]
-        cards.append({
-            "title": TITLES.get(ftype, humanize(ftype)),
-            "document": DOCUMENT_LABELS.get(f.get("affected_document", ""), NOT_AVAILABLE),
-            "field": FIELD_LABELS.get(f.get("affected_field") or "", f.get("affected_field") or ""),
-            "values": values,
-            "explanation": humanize(f.get("explanation", "")),
-            "next_step": NEXT_STEP.get(ftype, "Check this finding against the source documents."),
-            "human_review": shipment_review or f.get("expected_action") == "qualified_human_review",
-            "regulatory": regulatory_block(f.get("regulatory_context")),
-        })
-    return cards
+            seen[digest] = slot
+    return duplicates
 
 
 def extraction_view(report):
@@ -236,8 +183,138 @@ def extraction_view(report):
     }
 
 
+def slot_states(uploaded, report=None, running=False, mismatch=None):
+    """The state of each document slot: Missing, Uploaded, Reading, Read, Could not read or Type may not match.
+
+    uploaded: {doc_key: True/False}. report: the last check's result, if any.
+    mismatch: {doc_key: True} for slots whose file name or identified type points to another document.
+    """
+    failed, read = set(), set()
+    if report:
+        failed = {Path(name).stem for name in extraction_view(report)["failed_files"]}
+        read = {key for key, _ in DOCUMENT_TYPES if key not in failed and uploaded.get(key)}
+    states = {}
+    for key, _ in DOCUMENT_TYPES:
+        if not uploaded.get(key):
+            states[key] = "Missing"
+        elif running:
+            states[key] = "Reading"
+        elif key in failed:
+            states[key] = "Could not read"
+        elif key in read:
+            states[key] = "Read"
+        else:
+            states[key] = "Uploaded"
+        if states[key] in ("Uploaded", "Read") and (mismatch or {}).get(key):
+            states[key] = "Type may not match"
+    return states
+
+
+def banner(report):
+    """A one-line summary of the run, with its completeness."""
+    validation = report.get("validation", {})
+    findings = validation.get("findings", [])
+    if any(f.get("finding_type") == "extraction_failed" for f in findings):
+        return {"level": "warning",
+                "text": "Some documents could not be read, so the checks that need them are incomplete."}
+    if not findings:
+        return {"level": "info", "text": "No findings were detected in the checks that could run."}
+    return {"level": "error", "text": f"{len(findings)} finding(s) need review."}
+
+
+def triage_view(report):
+    """Suggested review order and the reasons, if the pipeline produced them."""
+    triage = report.get("validation", {}).get("triage")
+    if not triage:
+        return None
+    return {
+        "priority": PRIORITY_LABEL.get(triage.get("suggested_priority"), NOT_AVAILABLE),
+        "review": "Human review recommended" if triage.get("human_review_recommended") else "No review needed",
+        "review_needed": bool(triage.get("human_review_recommended")),
+        "reasons": [humanize(reason) for reason in triage.get("reasons", [])],
+    }
+
+
+def checks_not_completed_view(report):
+    """Checks that could not run, each with the document or field that was needed."""
+    rows = []
+    for item in report.get("validation", {}).get("checks_not_completed", []) or []:
+        rows.append({
+            "check": item.get("check", ""),
+            "text": f"{item.get('check', 'This check')} could not be checked: {humanize(item.get('reason', ''))}.",
+            "needed": [DOCUMENT_LABELS.get(doc, doc) for doc in item.get("documents", [])],
+        })
+    return rows
+
+
+def regulatory_block(context):
+    """Regulatory context to show for one finding, or None when there is nothing useful to show."""
+    if not context:
+        return None
+    status = context.get("status", "")
+    sources = context.get("sources", [])
+    if status == "not_applicable":
+        return None
+    if status == "error":
+        return {"message": "The regulatory check could not run.", "answer": "", "sources": [], "quotes": [],
+                "question": "", "corpus_note": CORPUS_NOTE}
+    if status == "supported" and sources:
+        return {
+            "message": "",
+            "answer": context.get("answer", ""),
+            "sources": sources,
+            "quotes": context.get("quotes", []),
+            "question": humanize(context.get("question", "")),
+            "corpus_note": CORPUS_NOTE,
+        }
+    return {"message": NO_SOURCE, "answer": "", "sources": [], "quotes": [],
+            "question": humanize(context.get("question", "")), "corpus_note": CORPUS_NOTE}
+
+
+def findings_view(report):
+    """One row per finding, for the summary table, with readable labels."""
+    rows = []
+    for f in report.get("validation", {}).get("findings", []):
+        field = f.get("affected_field") or ""
+        rows.append({
+            "Finding": TITLES.get(f.get("finding_type", ""), humanize(f.get("finding_type", ""))),
+            "Document": DOCUMENT_LABELS.get(f.get("affected_document", ""), NOT_AVAILABLE),
+            "Field": FIELD_LABELS.get(field, NOT_AVAILABLE if not field else field),
+        })
+    return rows
+
+
+def review_cards(report):
+    """One card per finding: plain title and explanation, values side by side, the next step."""
+    triage = triage_view(report)
+    shipment_review = bool(triage and triage["review_needed"])
+    cards = []
+    for f in report.get("validation", {}).get("findings", []):
+        ftype = f.get("finding_type", "")
+        field = f.get("affected_field") or ""
+        values = []
+        if f.get("reference_document") is not None:
+            values = [
+                {"document": DOCUMENT_LABELS.get(f["reference_document"], f["reference_document"]),
+                 "value": value_text(f.get("reference_value"), field)},
+                {"document": DOCUMENT_LABELS.get(f.get("affected_document", ""), f.get("affected_document", "")),
+                 "value": value_text(f.get("observed_value"), field)},
+            ]
+        cards.append({
+            "title": TITLES.get(ftype, humanize(ftype)),
+            "document": DOCUMENT_LABELS.get(f.get("affected_document", ""), NOT_AVAILABLE),
+            "field": FIELD_LABELS.get(field, NOT_AVAILABLE if not field else field),
+            "values": values,
+            "explanation": EXPLANATIONS.get(ftype, humanize(f.get("explanation", ""))),
+            "next_step": NEXT_STEP.get(ftype, "Check this finding against the source documents."),
+            "human_review": shipment_review or f.get("expected_action") == "qualified_human_review",
+            "regulatory": regulatory_block(f.get("regulatory_context")),
+        })
+    return cards
+
+
 def documents_read_text(report):
-    """'4 of 4 documents read', or a plain note when the count is unknown."""
+    """'4 of 4', or 'Not available' when the count is unknown."""
     info = extraction_view(report)
     if info["uploaded"] is None or info["extracted"] is None:
         return NOT_AVAILABLE
@@ -245,15 +322,15 @@ def documents_read_text(report):
 
 
 def summary(report):
-    """Everything the screen shows, in one dictionary."""
-    triage = triage_view(report)
+    """Everything the screen shows, in one dictionary. Compliance is always 'not assessed'."""
     return {
         "banner": banner(report),
         "documents_read": documents_read_text(report),
         "extraction": extraction_view(report),
-        "triage": triage,
+        "triage": triage_view(report),
         "cards": review_cards(report),
         "findings": findings_view(report),
+        "not_completed": checks_not_completed_view(report),
         "compliance": "not assessed",
         "disclaimer": DISCLAIMER,
     }

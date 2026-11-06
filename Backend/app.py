@@ -1,6 +1,6 @@
 """PortDoc AI: a shipment review workspace for dangerous goods document pre-checks (Streamlit).
 
-Main flow: add the four documents, check the shipment, review what needs attention.
+Main flow: add shipment documents, check the shipment, review what needs attention.
 Also: open a saved report, or load the sample case.
 
 Run from the project root, in the PowerShell window where your model key is set:
@@ -8,6 +8,8 @@ Run from the project root, in the PowerShell window where your model key is set:
 
 Layout and wording live here. The report logic is in report_view.py.
 """
+import hashlib
+import re
 import subprocess
 import sys
 import tempfile
@@ -35,29 +37,30 @@ html, body, [class*="css"] { font-family: 'Source Sans 3', 'IBM Plex Sans', 'Seg
 h1 { color: #18324A; font-weight: 600; font-size: 1.85rem; margin-bottom: 0; }
 h2, h3 { color: #18324A; font-weight: 600; }
 h2 { font-size: 1.25rem; margin-top: 1.6rem; }
-h3 { font-size: 1.05rem; }
-.subtitle { color: #687681; font-size: 1.02rem; margin-top: 0.15rem; }
+.subtitle { color: #18324A; font-size: 1.02rem; margin-top: 0.15rem; }
 .notice { background: #FFFFFF; border: 1px solid #D9DDDF; border-left: 3px solid #2F746F;
           border-radius: 4px; padding: 0.65rem 0.9rem; color: #18324A; margin: 0.9rem 0 0.4rem 0; }
-.muted { color: #687681; font-size: 0.92rem; }
-.state { font-weight: 600; font-size: 0.92rem; }
-.state-missing { color: #687681; }
+.muted { color: #5A6772; font-size: 0.93rem; }
+.state { font-weight: 600; font-size: 0.93rem; }
+.state-missing { color: #5A6772; }
 .state-uploaded { color: #18324A; }
 .state-reading { color: #2F746F; }
 .state-read { color: #2F746F; }
 .state-failed { color: #B64B4B; }
+.state-check { color: #B77932; }
 .review { color: #B77932; font-weight: 600; }
 .urgent { color: #B64B4B; font-weight: 600; }
-.label { color: #687681; font-size: 0.85rem; margin-bottom: 0.1rem; }
+.label { color: #5A6772; font-size: 0.85rem; margin-bottom: 0.1rem; }
 .value { color: #18324A; font-weight: 600; font-size: 1.05rem; }
 .stage-complete { color: #2F746F; font-weight: 600; }
 .stage-progress { color: #18324A; font-weight: 600; }
-.stage-notrun { color: #687681; }
+.stage-notrun { color: #5A6772; }
+.stage-notcompleted { color: #B64B4B; font-weight: 600; }
 div.stButton > button[kind="primary"] { background: #2F746F; border-color: #2F746F; color: #FFFFFF; }
 div.stButton > button[kind="primary"]:hover { background: #26605C; border-color: #26605C; color: #FFFFFF; }
 div.stButton > button[kind="secondary"] { color: #2F746F; border-color: #2F746F; background: #FFFFFF; }
 [data-testid="stMetricValue"] { color: #18324A; font-size: 1.35rem; }
-[data-testid="stMetricLabel"] { color: #687681; }
+[data-testid="stMetricLabel"] { color: #5A6772; }
 </style>
 """
 st.markdown(CSS, unsafe_allow_html=True)
@@ -66,26 +69,35 @@ for key, default in [("result", None), ("log", "")]:
     if key not in st.session_state:
         st.session_state[key] = default
 
+KEY_PATTERNS = [r"AIza[0-9A-Za-z_\-]{20,}", r"sk-[A-Za-z0-9_\-]{20,}"]
+
+
+def redact(text):
+    """Remove anything that looks like an API key before the log is shown."""
+    for pattern in KEY_PATTERNS:
+        text = re.sub(pattern, "[key removed]", text)
+    return text
+
 
 def state_html(state):
-    """The slot state as coloured text, with the word itself, so colour is not the only cue."""
+    """A slot state as coloured text. The words carry the meaning, not the colour."""
     css = {"Missing": "state-missing", "Uploaded": "state-uploaded", "Reading": "state-reading",
-           "Read": "state-read", "Could not read": "state-failed"}.get(state, "state-uploaded")
+           "Read": "state-read", "Could not read": "state-failed", "Type may not match": "state-check"}.get(state, "state-uploaded")
     return f"<span class='state {css}'>{state}</span>"
 
 
 def stage_html(progress):
-    """The stages, in plain language, each with its status."""
+    """The stages in plain language, each with its status."""
     rows = []
+    css = {"complete": "stage-complete", "in progress": "stage-progress", "not completed": "stage-notcompleted"}
     for key, label in RV.STAGES:
         status = progress[key]
-        css = {"complete": "stage-complete", "in progress": "stage-progress"}.get(status, "stage-notrun")
-        rows.append(f"<div>{label}: <span class='{css}'>{status.capitalize()}</span></div>")
+        rows.append(f"<div>{label}: <span class='{css.get(status, 'stage-notrun')}'>{status.capitalize()}</span></div>")
     return "".join(rows)
 
 
 def banner_message(level, text):
-    """Show a banner in a calm way: a notice box for information, text for the rest."""
+    """A banner that states its meaning in words."""
     if level == "error":
         st.markdown(f"<div class='notice'><span class='urgent'>Needs review.</span> {text}</div>", unsafe_allow_html=True)
     elif level == "warning":
@@ -101,7 +113,7 @@ st.markdown(f"<div class='notice'>{RV.DISCLAIMER}</div>", unsafe_allow_html=True
 
 
 def show_results(report, label):
-    """The review workspace for one report: summary, review queue, evidence, download, details."""
+    """The review workspace for one report."""
     view = RV.summary(report)
     st.markdown(f"<div class='muted'>{label}</div>", unsafe_allow_html=True)
     banner_message(view["banner"]["level"], view["banner"]["text"])
@@ -110,20 +122,20 @@ def show_results(report, label):
     col1.metric("Documents read", view["documents_read"])
     col2.metric("Findings", len(view["cards"]))
     triage = view["triage"]
-    col3.metric("Suggested priority", triage["priority"] if triage else RV.NOT_AVAILABLE)
+    col3.metric("Suggested review order", triage["priority"] if triage else RV.NOT_AVAILABLE)
     if triage:
-        review_css = "review" if triage["review_needed"] else "muted"
-        st.markdown(f"<div class='{review_css}'>{triage['review']}</div>", unsafe_allow_html=True)
-        st.caption("The suggested priority is a suggestion for review order, not a risk rating.")
+        css = "review" if triage["review_needed"] else "muted"
+        st.markdown(f"<div class='{css}'>{triage['review']}</div>", unsafe_allow_html=True)
+        st.caption("The suggested review order is a suggestion, not a risk rating or a compliance result.")
         for reason in triage["reasons"]:
-            st.caption("Why: " + reason)
+            st.caption("Reason: " + reason)
     if view["extraction"]["failed_files"]:
-        st.warning("Could not be read: " + ", ".join(
-            RV.DOCUMENT_LABELS.get(Path(name).stem, name) for name in view["extraction"]["failed_files"]))
+        names = [RV.DOCUMENT_LABELS.get(Path(name).stem, name) for name in view["extraction"]["failed_files"]]
+        st.warning("Could not be read: " + ", ".join(names) + ". Checks that need these documents are not complete.")
 
-    st.markdown("<h2>Review queue</h2>", unsafe_allow_html=True)
+    st.markdown("<h2>Findings</h2>", unsafe_allow_html=True)
     if not view["cards"]:
-        st.write("No configured issues were found. Regulatory compliance is not assessed.")
+        st.write("No findings were detected in the checks that could run.")
     for index, card in enumerate(view["cards"]):
         suffix = "  ·  Review recommended" if card["human_review"] else ""
         with st.expander(f"{card['title']}  ·  {card['document']}{suffix}", expanded=index == 0):
@@ -132,8 +144,8 @@ def show_results(report, label):
                 for column, item in zip((left, right), card["values"]):
                     column.markdown(f"<div class='label'>{item['document']}</div>"
                                     f"<div class='value'>{item['value']}</div>", unsafe_allow_html=True)
-                if card["field"]:
-                    st.markdown(f"<div class='muted'>Field: {card['field']}</div>", unsafe_allow_html=True)
+            if card["field"] and card["field"] != RV.NOT_AVAILABLE:
+                st.markdown(f"<div class='muted'>Field: {card['field']}</div>", unsafe_allow_html=True)
             st.write(card["explanation"])
             if card["human_review"]:
                 st.markdown("<div class='review'>Qualified human review is recommended for this finding.</div>",
@@ -141,27 +153,24 @@ def show_results(report, label):
             st.markdown(f"**Next step:** {card['next_step']}")
 
             reg = card["regulatory"]
-            st.markdown("**Regulatory context**")
-            if reg is None:
-                st.caption("Not checked against the regulations.")
-            else:
+            if reg:
+                st.markdown("**Regulatory context**")
                 if reg["message"]:
                     st.write(reg["message"])
                 if reg["answer"]:
                     st.write(reg["answer"])
-                if reg["question"]:
-                    origin = "suggested by the AI planner" if reg["question_source"] == "planner" else "standard question"
-                    st.caption(f"Question ({origin}): {reg['question']}")
                 for source in reg["sources"]:
                     st.markdown(f"- [{source['source']}]({source['url']})")
                 for quote in reg["quotes"]:
                     st.markdown(f"> {quote.get('quote', '')}")
-                for warning in reg["warnings"]:
-                    st.warning(warning)
                 if reg["answer"] or reg["sources"]:
                     st.caption(reg["corpus_note"])
-                for check in reg["checks"]:
-                    st.caption("Check: " + check)
+
+    if view["not_completed"]:
+        st.markdown("<h2>Checks not completed</h2>", unsafe_allow_html=True)
+        st.caption("These checks did not run, so they are not passes.")
+        for item in view["not_completed"]:
+            st.markdown(f"- {item['text']}")
 
     if view["findings"]:
         st.markdown("<h2>Summary</h2>", unsafe_allow_html=True)
@@ -173,23 +182,25 @@ def show_results(report, label):
                        mime="application/json")
     with st.expander("Technical details (for developers)"):
         if st.session_state.log:
-            st.code(st.session_state.log)
+            st.code(redact(st.session_state.log))
         st.json(report)
 
 
-def run_check(uploads, slot_boxes, stage_box):
-    """Save the four documents, run the pipeline, and follow its output into the stages."""
+def run_check(uploads, slot_boxes, stage_box, previous_report):
+    """Save the uploaded documents, run the pipeline, and follow its output into the stages."""
     work = Path(tempfile.mkdtemp(prefix="portdoc_"))
     pdf_folder, output_folder = work / "pdfs", work / "output"
     pdf_folder.mkdir()
     present = {key: uploads[key] is not None for key, _ in RV.DOCUMENT_TYPES}
     for key, _ in RV.DOCUMENT_TYPES:
-        (pdf_folder / f"{key}.pdf").write_bytes(uploads[key].getbuffer())
+        if present[key]:
+            (pdf_folder / f"{key}.pdf").write_bytes(uploads[key].getbuffer())
 
     progress = RV.new_progress()
     stage_box.markdown(stage_html(progress), unsafe_allow_html=True)
     for key, box in slot_boxes.items():
-        box.markdown(state_html("Reading" if present[key] else "Missing"), unsafe_allow_html=True)
+        if present[key]:
+            box.markdown(state_html("Reading"), unsafe_allow_html=True)
 
     command = [sys.executable, "-u", str(BACKEND / "run_pipeline.py"),
                "--pdf-folder", str(pdf_folder), "--output-folder", str(output_folder)]
@@ -204,43 +215,68 @@ def run_check(uploads, slot_boxes, stage_box):
     st.session_state.log = "".join(log_lines)
 
     report_path = output_folder / "validation_report.json"
-    if report_path.exists() and "validation" in RV.load_report(report_path):
+    finished = report_path.exists() and "validation" in RV.load_report(report_path)
+    if finished:
         report = RV.load_report(report_path)
         st.session_state.result = (report, LIVE_LABEL)
         states = RV.slot_states(present, report)
         for key, box in slot_boxes.items():
-            box.markdown(state_html(states[key]), unsafe_allow_html=True)
+            if present[key]:
+                box.markdown(state_html(states[key]), unsafe_allow_html=True)
+        stage_box.markdown(stage_html(RV.finish_progress(progress, completed=True)), unsafe_allow_html=True)
     else:
-        st.session_state.result = None
-        st.error("The check did not finish. Open Technical details to see the log, check your model key and "
-                 "quota, then try again.")
+        st.session_state.result = previous_report
+        stage_box.markdown(stage_html(RV.finish_progress(progress, completed=False)), unsafe_allow_html=True)
+        for key, box in slot_boxes.items():
+            if present[key]:
+                box.markdown(state_html("Could not read"), unsafe_allow_html=True)
+        st.error(RV.FAILURE_MESSAGE)
 
 
 tab_check, tab_saved = st.tabs(["Check a shipment", "Open a saved report"])
 
 with tab_check:
-    st.markdown("<h2>1. Add the four documents</h2>", unsafe_allow_html=True)
+    st.markdown("<h2>1. Add shipment documents</h2>", unsafe_allow_html=True)
+    st.markdown(f"<div class='muted'>{RV.UPLOAD_HELP}</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='muted'>PDF files with selectable text. Scanned PDFs are not supported. "
                 f"Limit: {MAX_SIZE}.</div>", unsafe_allow_html=True)
-    uploads, slot_boxes = {}, {}
+
+    live_report = st.session_state.result[0] if (st.session_state.result and st.session_state.result[1] == LIVE_LABEL) else None
+    uploads, slot_boxes, fingerprints, mismatch = {}, {}, {}, {}
     columns = st.columns(4)
     for column, (key, label) in zip(columns, RV.DOCUMENT_TYPES):
         with column:
             with st.container(border=True):
                 st.markdown(f"**{label}**")
                 uploads[key] = st.file_uploader(label, type="pdf", key=f"slot_{key}", label_visibility="collapsed")
+                file = uploads[key]
+                fingerprints[key] = hashlib.sha256(file.getbuffer()).hexdigest() if file is not None else None
+                if file is not None:
+                    st.caption(file.name)
+                    hint = RV.type_hint(file.name, key)
+                    identified = RV.identified_types(live_report).get(Path(file.name).stem)
+                    if hint or (identified and identified != key):
+                        mismatch[key] = True
+                        suggested = RV.DOCUMENT_LABELS.get(hint or identified, "another document type")
+                        st.markdown(f"<div class='muted'>The file may be a {suggested.lower()}. "
+                                    f"Check the document type before you run the check.</div>", unsafe_allow_html=True)
                 slot_boxes[key] = st.empty()
-                current = RV.slot_states({key: uploads[key] is not None}, st.session_state.result[0]
-                                         if st.session_state.result and st.session_state.result[1] == LIVE_LABEL else None)
-                slot_boxes[key].markdown(state_html(current[key]), unsafe_allow_html=True)
-    ready = all(uploads[key] is not None for key, _ in RV.DOCUMENT_TYPES)
+                states = RV.slot_states({key: file is not None}, live_report, mismatch=mismatch)
+                slot_boxes[key].markdown(state_html(states[key]), unsafe_allow_html=True)
+
+    duplicates = RV.same_file_slots(fingerprints)
+    if duplicates:
+        names = ", ".join(RV.DOCUMENT_LABELS[key] for key in sorted(duplicates))
+        st.error(f"The same file is in more than one slot ({names}). Remove one of them before checking.")
+    any_present = any(file is not None for file in uploads.values())
 
     st.markdown("<h2>2. Check the shipment</h2>", unsafe_allow_html=True)
-    left, right = st.columns([1, 1])
-    check_clicked = left.button("Check shipment", type="primary", disabled=not ready, width="stretch")
+    left, right = st.columns(2)
+    check_clicked = left.button("Check shipment", type="primary", disabled=not any_present or bool(duplicates),
+                                width="stretch")
     sample_clicked = right.button("Load sample case", type="secondary", width="stretch")
-    if not ready:
-        st.markdown("<div class='muted'>Add all four documents to check the shipment, or load the sample case.</div>",
+    if not any_present:
+        st.markdown("<div class='muted'>Add at least one document to run a check, or load the sample case.</div>",
                     unsafe_allow_html=True)
     stage_box = st.empty()
     stage_box.markdown(stage_html(RV.new_progress()), unsafe_allow_html=True)
@@ -249,16 +285,16 @@ with tab_check:
         st.session_state.result = (RV.load_report(SAMPLE), SAMPLE_LABEL)
         st.session_state.log = ""
     if check_clicked:
-        run_check(uploads, slot_boxes, stage_box)
+        run_check(uploads, slot_boxes, stage_box, st.session_state.result)
 
     if st.session_state.result:
         st.markdown("<h2>3. Review</h2>", unsafe_allow_html=True)
         show_results(*st.session_state.result)
 
 with tab_saved:
-    st.markdown("<div class='muted'>Open a validation report saved from an earlier PortDoc AI check. "
-                "Accepted format: the JSON report file from an earlier check.</div>", unsafe_allow_html=True)
-    report_file = st.file_uploader("Validation report (.json)", type="json", key="saved_report")
+    st.markdown("<div class='muted'>Open a report saved from an earlier check. Accepted format: the JSON "
+                "report file the pipeline writes.</div>", unsafe_allow_html=True)
+    report_file = st.file_uploader("Saved report (.json)", type="json", key="saved_report")
     if report_file is not None:
         try:
             report = RV.json.loads(report_file.getvalue().decode("utf-8"))
