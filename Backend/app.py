@@ -19,12 +19,19 @@ import streamlit as st
 
 import report_view as RV
 
+
 BACKEND = Path(__file__).resolve().parent
 ROOT = BACKEND.parent
 SAMPLE = BACKEND / "samples" / "S06_sample_report.json"
 SAMPLE_LABEL = "Sample case: saved demo results from a live run. This is not a fresh pipeline run."
 LIVE_LABEL = "Result of the check you just ran."
 MAX_SIZE = "200 MB per file (the Streamlit default)"
+
+RAG_DIR = BACKEND / "rag"
+if str(RAG_DIR) not in sys.path:
+    sys.path.insert(0, str(RAG_DIR))
+import answer as A  # noqa: E402
+from retrieve import Retriever  # noqa: E402
 
 st.set_page_config(page_title="PortDoc AI", layout="wide")
 
@@ -72,7 +79,7 @@ div.stButton > button[kind="secondary"] { color: #2F746F; border-color: #2F746F;
 """
 st.markdown(CSS, unsafe_allow_html=True)
 
-for key, default in [("result", None), ("log", "")]:
+for key, default in [("result", None), ("log", ""), ("answers", {})]:
     if key not in st.session_state:
         st.session_state[key] = default
 
@@ -84,6 +91,24 @@ def redact(text):
     for pattern in KEY_PATTERNS:
         text = re.sub(pattern, "[key removed]", text)
     return text
+
+
+@st.cache_resource
+def load_retriever():
+    """The regulatory corpus, loaded once per session of the app."""
+    return Retriever.from_corpus()
+
+
+def ask_about(question):
+    """Answer one question from the corpus, with citations. Uses one model call."""
+    try:
+        retriever = load_retriever()
+        result = A.answer(question, retriever)
+    except Exception as exc:  # shown to the user without the key or any raw API text
+        return {"message": "The question could not be answered right now. Check your model key and quota, then try again.",
+                "detail": redact(str(exc))[:200], "sources": [], "quotes": [], "checks": [], "answer": ""}
+    passages = {passage["id"]: passage for passage in retriever.passages}
+    return RV.answer_view(result, passages)
 
 
 def state_html(state):
@@ -137,6 +162,9 @@ def show_results(report, label):
         st.caption("The suggested review order is a suggestion, not a risk rating or a compliance result.")
         for reason in triage["reasons"]:
             st.caption("Reason: " + reason)
+    st.markdown("<h2>What we checked</h2>", unsafe_allow_html=True)
+    st.dataframe([{"Check": row["check"], "Result": row["result"]} for row in view["checks"]],
+                 width="stretch", hide_index=True)
     if view["extraction"]["failed_files"]:
         names = [RV.DOCUMENT_LABELS.get(Path(name).stem, name) for name in view["extraction"]["failed_files"]]
         st.warning("Could not be read: " + ", ".join(names) + ". Checks that need these documents are not complete.")
@@ -152,6 +180,9 @@ def show_results(report, label):
                 for column, item in zip((left, right), card["values"]):
                     column.markdown(f"<div class='label'>{item['document']}</div>"
                                     f"<div class='value'>{item['value']}</div>", unsafe_allow_html=True)
+                    if item.get("source") and item["source"].get("quote"):
+                        page = item["source"].get("page")
+                        column.caption(f"Page {page}: " + item["source"]["quote"][:200])
             if card["field"] and card["field"] != RV.NOT_AVAILABLE:
                 st.markdown(f"<div class='muted'>Field: {card['field']}</div>", unsafe_allow_html=True)
             st.write(card["explanation"])
@@ -159,6 +190,28 @@ def show_results(report, label):
                 st.markdown("<div class='review'>Qualified human review is recommended for this finding.</div>",
                             unsafe_allow_html=True)
             st.markdown(f"**Next step:** {card['next_step']}")
+
+            ask_key = f"{card['title']}|{index}"
+            st.markdown("**Ask about this finding**")
+            st.caption("Each question uses one model call from your quota. Answers come only from the project's limited corpus.")
+            question = st.text_input("Your question", key=f"q_{index}",
+                                     placeholder="For example: What must the declaration state about the class?")
+            if st.button("Ask", key=f"ask_{index}") and question.strip():
+                st.session_state.answers[ask_key] = ask_about(question.strip())
+            answer = st.session_state.answers.get(ask_key)
+            if answer:
+                if answer.get("message"):
+                    st.write(answer["message"])
+                if answer.get("detail"):
+                    st.caption(answer["detail"])
+                if answer.get("answer"):
+                    st.write(answer["answer"])
+                for source in answer.get("sources", []):
+                    st.markdown(f"- [{source['source']}]({source['url']})")
+                for quote in answer.get("quotes", []):
+                    st.markdown(f"> {quote.get('quote', '')}")
+                if answer.get("corpus_note") and (answer.get("answer") or answer.get("sources")):
+                    st.caption(answer["corpus_note"])
 
             reg = card["regulatory"]
             if reg:
@@ -195,6 +248,10 @@ def show_results(report, label):
     st.download_button("Download report (JSON)", RV.report_bytes(report), file_name="validation_report.json",
                        mime="application/json")
     with st.expander("Technical details (for developers)"):
+        if view["notes"]:
+            st.markdown("**Extraction notes**")
+            for note in view["notes"]:
+                st.caption(f"{note['document']}: {note['note']}")
         if st.session_state.log:
             st.code(redact(st.session_state.log))
         st.json(report)
@@ -319,4 +376,4 @@ with tab_saved:
             if "validation" not in report:
                 st.error("This file is not a validation report from the pipeline.")
             else:
-                show_results(report, f"Saved report: {report_file.name}")
+                show_results(report, RV.summary(report)["saved"] + f" File: {report_file.name}")

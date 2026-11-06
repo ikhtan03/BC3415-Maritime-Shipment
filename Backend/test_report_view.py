@@ -133,5 +133,29 @@ import triage as TR  # noqa: E402
 reasons = TR.triage(one_unread["validation"])["reasons"]
 check("triage reasons are not repeated", len(reasons) == len(set(reasons)))
 
+prov_report = {"extraction": {"extraction_metadata": {"packing_list": {"provenance": {
+                   "gross_cargo_weight_kg": {"page": 1, "quote": "Gross Cargo Mass (kg) 19,500 kg"}},
+                   "extraction_notes": ["Gross and net weights converted to numbers."]}}},
+               "validation": {"findings": [], "checks_not_completed": []}}
+check("a value shows its page and quote from the document",
+      RV.field_source(prov_report, "packing_list", "gross_cargo_weight_kg")["quote"].startswith("Gross Cargo"))
+check("a value with no recorded source gives none", RV.field_source(prov_report, "packing_list", "container_id") is None)
+check("extraction notes are listed by document", RV.extraction_notes_view(prov_report)[0]["document"] == "Packing list")
+rows = {r["check"]: r["result"] for r in RV.checks_view({"validation": {"findings": [
+    {"finding_type": "weight_mismatch", "affected_document": "packing_list"},
+    {"finding_type": "missing_document", "affected_document": "commercial_invoice"}],
+    "checks_not_completed": [{"check": "Container ID"}]}})}
+check("the checks table says which checks found a difference", rows["Gross cargo weight"] == "Difference found")
+check("the checks table says which checks could not run", rows["Container ID"] == "Not completed")
+check("the checks table says which documents were supplied",
+      rows["Commercial invoice supplied"] == "No" and rows["Packing list supplied"] == "Yes")
+check("a saved report says it is a record, not a fresh run",
+      "not a fresh run" in RV.saved_info({"generated_at_utc": "2026-10-27T10:51:53+00:00"}))
+ans = RV.answer_view({"status": "supported", "answer": "A.", "citations": ["p1"], "quotes": [],
+                      "problems": []}, {"p1": {"source_title": "UNECE form", "url": "https://u"}})
+check("an answer shows its source and text", ans["answer"] == "A." and ans["sources"][0]["url"] == "https://u")
+none = RV.answer_view({"status": "not_found", "answer": "No.", "citations": []}, {})
+check("a question with no source says so plainly", none["message"] == RV.NO_SOURCE and none["answer"] == "")
+
 print(f"\n{'all checks passed' if not FAILS else str(len(FAILS)) + ' failed'}")
 raise SystemExit(1 if FAILS else 0)

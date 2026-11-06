@@ -303,9 +303,11 @@ def review_cards(report):
         if f.get("reference_document") is not None:
             values = [
                 {"document": DOCUMENT_LABELS.get(f["reference_document"], f["reference_document"]),
-                 "value": value_text(f.get("reference_value"), field)},
+                 "value": value_text(f.get("reference_value"), field),
+                 "source": field_source(report, f["reference_document"], field)},
                 {"document": DOCUMENT_LABELS.get(f.get("affected_document", ""), f.get("affected_document", "")),
-                 "value": value_text(f.get("observed_value"), field)},
+                 "value": value_text(f.get("observed_value"), field),
+                 "source": field_source(report, f.get("affected_document", ""), field)},
             ]
         cards.append({
             "title": TITLES.get(ftype, humanize(ftype)),
@@ -347,6 +349,80 @@ def summary(report):
         "missing": missing_documents_view(report),
         "findings": findings_view(report),
         "not_completed": checks_not_completed_view(report),
+        "checks": checks_view(report),
+        "notes": extraction_notes_view(report),
+        "saved": saved_info(report),
         "compliance": "not assessed",
         "disclaimer": DISCLAIMER,
+    }
+
+
+def field_source(report, doc, field):
+    """Where a value came from in its document: the page and the quoted text, if the report has them."""
+    metadata = (report.get("extraction", {}).get("extraction_metadata", {}) or {}).get(doc, {})
+    provenance = (metadata.get("provenance", {}) or {}).get(field)
+    if not provenance:
+        return None
+    return {"page": provenance.get("page"), "quote": provenance.get("quote", "")}
+
+
+def extraction_notes_view(report):
+    """Notes the extraction step recorded for each document, for the technical view and the review."""
+    notes = []
+    for doc, metadata in (report.get("extraction", {}).get("extraction_metadata", {}) or {}).items():
+        for note in metadata.get("extraction_notes", []) or []:
+            notes.append({"document": DOCUMENT_LABELS.get(doc, doc), "note": note})
+    return notes
+
+
+def checks_view(report):
+    """Every check the tool runs, and what happened: a finding, no difference, or not completed."""
+    validation = report.get("validation", {})
+    findings = {(f.get("finding_type"), f.get("affected_document")) for f in validation.get("findings", [])}
+    not_done = {c.get("check") for c in validation.get("checks_not_completed", []) or []}
+    rows = []
+    for label, finding_type in [("Gross cargo weight", "weight_mismatch"),
+                                ("Container ID", "container_mismatch"),
+                                ("Dangerous goods class", "dg_class_conflict")]:
+        if label in not_done:
+            result = "Not completed"
+        elif any(ftype == finding_type for ftype, _ in findings):
+            result = "Difference found"
+        else:
+            result = "No difference found"
+        rows.append({"check": label, "result": result})
+    for doc, label in DOCUMENT_TYPES:
+        present = not any(f.get("finding_type") == "missing_document" and f.get("affected_document") == doc
+                          for f in validation.get("findings", []))
+        rows.append({"check": f"{label} supplied", "result": "Yes" if present else "No"})
+    return rows
+
+
+def saved_info(report):
+    """A line that says when the saved report was made and that it is a record, not a fresh check."""
+    stamp = report.get("generated_at_utc", "")
+    when = stamp[:16].replace("T", " ") + " UTC" if stamp else "an unknown time"
+    return f"Saved report from {when}. This is a record of an earlier check, not a fresh run."
+
+
+def answer_view(result, passages_by_id):
+    """Shape an answer from the answer step for the screen: the answer, its sources, quotes and checks."""
+    sources = []
+    for cid in result.get("citations", []):
+        passage = passages_by_id.get(cid)
+        if passage:
+            sources.append({"source": passage.get("source_title", ""), "url": passage.get("url", "")})
+    status = result.get("status", "")
+    if status == "not_found" or not sources:
+        message = NO_SOURCE
+    else:
+        message = ""
+    return {
+        "status": status,
+        "answer": result.get("answer", "") if not message else "",
+        "message": message,
+        "sources": sources,
+        "quotes": result.get("quotes", []),
+        "checks": result.get("problems", []),
+        "corpus_note": CORPUS_NOTE,
     }
