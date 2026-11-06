@@ -175,6 +175,11 @@ def show_results(report, label):
         st.caption("The suggested review order is a suggestion, not a risk rating or a compliance result.")
         for reason in triage["reasons"]:
             st.caption("Reason: " + reason)
+    if view.get("files"):
+        st.markdown("<h2>Files</h2>", unsafe_allow_html=True)
+        st.caption("Each file is read to confirm its document type. A file that does not match what was expected is shown here.")
+        st.dataframe(view["files"], width="stretch", hide_index=True)
+
     st.markdown("<h2>What we checked</h2>", unsafe_allow_html=True)
     st.dataframe([{"Check": row["check"], "Result": row["result"]} for row in view["checks"]],
                  width="stretch", hide_index=True)
@@ -274,22 +279,19 @@ def show_results(report, label):
         st.json(report)
 
 
-def run_check(uploads, slot_boxes, stage_box, previous_report):
-    """Save the uploaded documents, run the pipeline, and follow its output into the stages."""
+def run_check(uploads, stage_box, previous_report):
+    """Save the uploaded files under their own names, run the pipeline, and follow its output.
+
+    The pipeline reads each document to work out its type, so the names need not match the document.
+    """
     work = Path(tempfile.mkdtemp(prefix="portdoc_"))
     pdf_folder, output_folder = work / "pdfs", work / "output"
     pdf_folder.mkdir()
-    present = {key: uploads[key] is not None for key, _ in RV.DOCUMENT_TYPES}
-    for key, _ in RV.DOCUMENT_TYPES:
-        if present[key]:
-            (pdf_folder / f"{key}.pdf").write_bytes(uploads[key].getbuffer())
+    for file in uploads:
+        (pdf_folder / Path(file.name).name).write_bytes(file.getbuffer())
 
     progress = RV.new_progress()
     stage_box.markdown(stage_html(progress), unsafe_allow_html=True)
-    for key, box in slot_boxes.items():
-        if present[key]:
-            box.markdown(state_html("Reading"), unsafe_allow_html=True)
-
     command = [sys.executable, "-u", str(BACKEND / "run_pipeline.py"),
                "--pdf-folder", str(pdf_folder), "--output-folder", str(output_folder)]
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -307,18 +309,11 @@ def run_check(uploads, slot_boxes, stage_box, previous_report):
     if finished:
         report = RV.load_report(report_path)
         st.session_state.result = (report, LIVE_LABEL)
-        states = RV.slot_states(present, report)
-        for key, box in slot_boxes.items():
-            if present[key]:
-                box.markdown(state_html(states[key]), unsafe_allow_html=True)
         progress = RV.apply_outcome(RV.finish_progress(progress, completed=True), report)
         stage_box.markdown(stage_html(progress), unsafe_allow_html=True)
     else:
         st.session_state.result = previous_report
         stage_box.markdown(stage_html(RV.finish_progress(progress, completed=False)), unsafe_allow_html=True)
-        for key, box in slot_boxes.items():
-            if present[key]:
-                box.markdown(state_html("Could not read"), unsafe_allow_html=True)
         st.error(RV.FAILURE_MESSAGE)
 
 
@@ -327,44 +322,30 @@ tab_check, tab_saved = st.tabs(["Check a shipment", "Open a saved report"])
 with tab_check:
     st.markdown("<h2>1. Add shipment documents</h2>", unsafe_allow_html=True)
     st.markdown(f"<div class='muted'>{RV.UPLOAD_HELP}</div>", unsafe_allow_html=True)
-    st.markdown(f"<div class='muted'>PDF files with selectable text. Scanned PDFs are not supported. "
+    st.markdown("<div class='muted'>Drop all the PDFs at once. The tool reads each document to work out what it is, "
+                "so file names do not need to match. PDF files with selectable text only; scanned PDFs are not supported. "
                 f"Limit: {MAX_SIZE}.</div>", unsafe_allow_html=True)
-
-    live_report = st.session_state.result[0] if (st.session_state.result and st.session_state.result[1] == LIVE_LABEL) else None
-    uploads, slot_boxes, fingerprints, mismatch = {}, {}, {}, {}
-    columns = st.columns(4)
-    for column, (key, label) in zip(columns, RV.DOCUMENT_TYPES):
-        with column:
-            with st.container(border=True):
-                st.markdown(f"**{label}**")
-                uploads[key] = st.file_uploader(label, type="pdf", key=f"slot_{key}", label_visibility="collapsed")
-                file = uploads[key]
-                fingerprints[key] = hashlib.sha256(file.getbuffer()).hexdigest() if file is not None else None
-                if file is not None:
-                    st.caption(file.name)
-                    hint = RV.type_hint(file.name, key)
-                    identified = RV.identified_types(live_report).get(Path(file.name).stem)
-                    if hint or (identified and identified != key):
-                        mismatch[key] = True
-                        suggested = RV.DOCUMENT_LABELS.get(hint or identified, "another document type")
-                        st.markdown(f"<div class='muted'>The file may be a {suggested.lower()}. "
-                                    f"Check the document type before you run the check.</div>", unsafe_allow_html=True)
-                slot_boxes[key] = st.empty()
-                states = RV.slot_states({key: file is not None}, live_report, mismatch=mismatch)
-                slot_boxes[key].markdown(state_html(states[key]), unsafe_allow_html=True)
-
-    duplicates = RV.same_file_slots(fingerprints)
-    if duplicates:
-        names = ", ".join(RV.DOCUMENT_LABELS[key] for key in sorted(duplicates))
-        st.error(f"The same file is in more than one slot ({names}). Remove one of them before checking.")
-    any_present = any(file is not None for file in uploads.values())
+    uploads = st.file_uploader("Shipment PDFs", type="pdf", accept_multiple_files=True,
+                               key="shipment_files", label_visibility="collapsed") or []
+    names = [file.name for file in uploads]
+    duplicate_names = sorted({name for name in names if names.count(name) > 1})
+    if uploads:
+        st.markdown("<h3>Files to check</h3>", unsafe_allow_html=True)
+        for file in uploads:
+            hint = RV.filename_hint(file.name)
+            note = f"  ·  the file name suggests: {hint}" if hint else ""
+            st.markdown(f"- {file.name}{note}")
+        st.markdown("<div class='muted'>The document type of each file is confirmed when you run the check.</div>",
+                    unsafe_allow_html=True)
+    if duplicate_names:
+        st.error(f"Two files have the same name: {', '.join(duplicate_names)}. Rename one of them before checking.")
 
     st.markdown("<h2>2. Check the shipment</h2>", unsafe_allow_html=True)
     left, right = st.columns(2)
-    check_clicked = left.button("Check shipment", type="primary", disabled=not any_present or bool(duplicates),
+    check_clicked = left.button("Check shipment", type="primary", disabled=not uploads or bool(duplicate_names),
                                 width="stretch")
     sample_clicked = right.button("Load sample case", type="secondary", width="stretch")
-    if not any_present:
+    if not uploads:
         st.markdown("<div class='muted'>Add at least one document to run a check, or load the sample case.</div>",
                     unsafe_allow_html=True)
     stage_box = st.empty()
@@ -374,7 +355,7 @@ with tab_check:
         st.session_state.result = (RV.load_report(SAMPLE), SAMPLE_LABEL)
         st.session_state.log = ""
     if check_clicked:
-        run_check(uploads, slot_boxes, stage_box, st.session_state.result)
+        run_check(uploads, stage_box, st.session_state.result)
 
     if st.session_state.result:
         st.markdown("<h2>3. Review</h2>", unsafe_allow_html=True)

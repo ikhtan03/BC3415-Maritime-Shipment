@@ -157,5 +157,22 @@ check("an answer shows its source and text", ans["answer"] == "A." and ans["sour
 none = RV.answer_view({"status": "not_found", "answer": "No.", "citations": []}, {})
 check("a question with no source says so plainly", none["message"] == RV.NO_SOURCE and none["answer"] == "")
 
+unverified = RV.answer_view({"status": "not_verified", "answer": "Made up.", "citations": ["p1"],
+                             "quotes": [], "problems": ["quote does not appear"]},
+                            {"p1": {"source_title": "UNECE form", "url": "https://u"}})
+check("an answer that failed the checks is not shown", unverified["answer"] == "" and unverified["message"] == RV.NOT_VERIFIED)
+check("an answer with a problem is not shown even if its status says supported",
+      RV.answer_view({"status": "supported", "answer": "X.", "citations": ["p1"], "problems": ["bad quote"]},
+                     {"p1": {"source_title": "UNECE form", "url": "https://u"}})["answer"] == "")
+rows = RV.file_rows({"extraction": {"upload_inventory": [
+    {"filename": "scan_01.pdf", "document_type": "packing_list", "status": "extracted"},
+    {"filename": "doc2.pdf", "document_type": None, "status": "unidentified"},
+    {"filename": "copy.pdf", "document_type": "packing_list", "status": "duplicate_type"}]}})
+check("each file shows what it was read as", rows[0]["Read as"] == "Packing list" and rows[0]["ok"])
+check("an unidentified file says so", rows[1]["Read as"] == "Not identified" and "Could not tell" in rows[1]["Result"])
+check("a duplicate file says it was not used", "not used" in rows[2]["Result"])
+check("a file name can suggest a type before the check", RV.filename_hint("packing_list.pdf") == "Packing list")
+check("no file name gives no suggestion", RV.filename_hint("scan0001.pdf") is None)
+
 print(f"\n{'all checks passed' if not FAILS else str(len(FAILS)) + ' failed'}")
 raise SystemExit(1 if FAILS else 0)

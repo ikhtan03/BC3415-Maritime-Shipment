@@ -11,6 +11,8 @@ from pathlib import Path
 DISCLAIMER = ("This prototype provides a document pre-check. It does not assess regulatory compliance "
               "or replace qualified review.")
 NO_SOURCE = "No relevant source was found in the current corpus."
+NOT_VERIFIED = ("The answer could not be verified against the corpus, so it is not shown. "
+                "The closest passages are listed below.")
 NOT_AVAILABLE = "Not available"
 CORPUS_NOTE = "Source: the project's limited corpus of official documents. For human review."
 FAILURE_MESSAGE = ("We couldn't finish reading the documents. Check that the extraction service is available, "
@@ -350,6 +352,7 @@ def summary(report):
         "findings": findings_view(report),
         "not_completed": checks_not_completed_view(report),
         "checks": checks_view(report),
+        "files": file_rows_without_flag(report),
         "notes": extraction_notes_view(report),
         "saved": saved_info(report),
         "compliance": "not assessed",
@@ -406,23 +409,68 @@ def saved_info(report):
 
 
 def answer_view(result, passages_by_id):
-    """Shape an answer from the answer step for the screen: the answer, its sources, quotes and checks."""
+    """Shape an answer for the screen. Only an answer the checks verified against the corpus is shown.
+
+    An answer that failed a check (its quotes, citations or figures did not match the corpus) is not shown,
+    and neither is any answer without a cited source. Those cases show a plain message instead.
+    """
     sources = []
     for cid in result.get("citations", []):
         passage = passages_by_id.get(cid)
         if passage:
             sources.append({"source": passage.get("source_title", ""), "url": passage.get("url", "")})
     status = result.get("status", "")
-    if status == "not_found" or not sources:
-        message = NO_SOURCE
-    else:
+    verified = status == "supported" and bool(sources) and not result.get("problems")
+    if verified:
         message = ""
+    elif status == "not_verified":
+        message = NOT_VERIFIED
+    else:
+        message = NO_SOURCE
     return {
         "status": status,
-        "answer": result.get("answer", "") if not message else "",
+        "answer": result.get("answer", "") if verified else "",
         "message": message,
-        "sources": sources,
-        "quotes": result.get("quotes", []),
+        "sources": sources if verified else [],
+        "quotes": result.get("quotes", []) if verified else [],
         "checks": result.get("problems", []),
         "corpus_note": CORPUS_NOTE,
     }
+
+
+FILE_STATUS_LABEL = {
+    "extracted": "Read",
+    "extraction_failed": "Could not read",
+    "unidentified": "Could not tell what this document is",
+    "duplicate_type": "Duplicate: a file of this type was already read, so this one was not used",
+    "pending": "Not processed",
+}
+
+
+def filename_hint(filename):
+    """The document type a file name suggests, for a prompt before the check. No model call."""
+    key = type_hint(filename, None)
+    return DOCUMENT_LABELS.get(key) if key else None
+
+
+def file_rows(report):
+    """One row per uploaded file: its name, the type it was read as, and what happened."""
+    rows = []
+    inventory = report.get("extraction", {}).get("upload_inventory", []) or []
+    for item in inventory:
+        if not isinstance(item, dict):
+            continue
+        read_as = DOCUMENT_LABELS.get(item.get("document_type") or "", "Not identified")
+        status = item.get("status", "")
+        rows.append({
+            "File": item.get("filename", ""),
+            "Read as": read_as,
+            "Result": FILE_STATUS_LABEL.get(status, status),
+            "ok": status == "extracted",
+        })
+    return rows
+
+
+def file_rows_without_flag(report):
+    """The file rows for the screen, without the internal flag."""
+    return [{k: v for k, v in row.items() if k != "ok"} for row in file_rows(report)]
