@@ -74,10 +74,12 @@
     "weight_mismatch"
   ],
   "expected_final_finding_types": [],
-  "expected_recheck_target": {
-    "document": "packing_list",
-    "field": "gross_cargo_weight_kg"
-  },
+  "expected_rechecked_documents": [
+    "bill_of_lading",
+    "commercial_invoice",
+    "packing_list",
+    "dangerous_goods_declaration"
+  ],
   "max_rounds": 2,
   "test_only": true
 }
