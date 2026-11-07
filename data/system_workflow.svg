@@ -1,28 +1,74 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 1110" width="940" height="1110">
-<style>text{font-family:Arial,Helvetica,sans-serif;fill:#172435}.head{font-size:20px;font-weight:700}.sub{font-size:14px}.tag{font-size:15px;font-weight:bold;fill:#175c52}.arrow{stroke:#526779;stroke-width:2.2;fill:none;marker-end:url(#arr)}.box{fill:#f4f8fb;stroke:#9db4c8;stroke-width:1.4}.green{fill:#eaf8f0;stroke:#72ae8c;stroke-width:1.6}.blue{fill:#eaf1ff;stroke:#8ca7df;stroke-width:1.6}.gold{fill:#fff7e7;stroke:#d4b771;stroke-width:1.4}.foot{font-size:13px;fill:#485d6c}</style>
-<defs><marker id="arr" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0 0 L9 3.5 L0 7 Z" fill="#526779"/></marker></defs>
-<text class="head" x="470" y="35" text-anchor="middle">Maritime DG — Agentic Workflow and Dataset Mapping</text>
-<rect class="green" x="265" y="53" width="410" height="85" rx="12"/><text class="head" x="470" y="83" text-anchor="middle">A — Shipping PDFs</text><text class="sub" x="470" y="108" text-anchor="middle">Only runtime dataset input (1–4 documents)</text>
-<path class="arrow" d="M470 138V175"/>
-<rect class="box" x="250" y="175" width="440" height="86" rx="11"/><text class="head" x="470" y="205" text-anchor="middle">1. LLM extraction</text><text class="sub" x="470" y="231" text-anchor="middle">PDFs → JSON per document</text>
-<rect class="green" x="705" y="175" width="220" height="86" rx="10"/><text class="tag" x="815" y="198" text-anchor="middle">B — ground_truth.json</text><text class="sub" x="815" y="220" text-anchor="middle">Compare extracted JSON</text><text class="sub" x="815" y="239" text-anchor="middle">to document_truth</text>
-<path class="arrow" d="M690 218H704"/><text class="foot" x="700" y="168" text-anchor="middle">TEST ONLY</text>
-<path class="arrow" d="M470 261V315"/>
-<rect class="box" x="250" y="315" width="440" height="88" rx="11"/><text class="head" x="470" y="345" text-anchor="middle">2. Python validation</text><text class="sub" x="470" y="370" text-anchor="middle">Extracted JSON → missing-document checks</text><text class="sub" x="470" y="388" text-anchor="middle">and cross-document discrepancies</text>
-<rect class="gold" x="705" y="315" width="220" height="88" rx="10"/><text class="tag" x="815" y="339" text-anchor="middle">C — answer_key.json</text><text class="sub" x="815" y="361" text-anchor="middle">Compare detected findings</text><text class="sub" x="815" y="380" text-anchor="middle">to expected_findings</text>
-<path class="arrow" d="M690 359H704"/><text class="foot" x="700" y="308" text-anchor="middle">TEST ONLY</text>
-<path class="arrow" d="M470 403V455"/>
-<rect class="blue" x="250" y="455" width="440" height="119" rx="11"/><text class="head" x="470" y="485" text-anchor="middle">3. Agentic verification loop</text><text class="sub" x="470" y="511" text-anchor="middle">Re-extract flagged fields (maximum 2 rounds)</text><text class="sub" x="470" y="532" text-anchor="middle">If values change → rerun Python rules</text><text class="sub" x="470" y="554" text-anchor="middle">Keep confirmed/uncertain issues with evidence</text>
-<rect class="green" x="705" y="455" width="220" height="119" rx="10"/><text class="tag" x="815" y="478" text-anchor="middle">B + C + V fixtures</text><text class="sub" x="815" y="501" text-anchor="middle">Evaluate corrections,</text><text class="sub" x="815" y="520" text-anchor="middle">remaining findings,</text><text class="sub" x="815" y="539" text-anchor="middle">and mock false positives</text><text class="foot" x="815" y="560" text-anchor="middle">TEST ONLY</text><path class="arrow" d="M690 516H704"/>
-<path class="arrow" d="M470 574V626"/>
-<rect class="blue" x="250" y="626" width="440" height="104" rx="11"/><text class="head" x="470" y="655" text-anchor="middle">4. Agentic RAG query planning</text><text class="sub" x="470" y="678" text-anchor="middle">Generate search topics from extracted shipment data</text><text class="sub" x="470" y="699" text-anchor="middle">Retrieve official regulatory evidence</text>
-<rect class="gold" x="705" y="626" width="220" height="104" rx="10"/><text class="tag" x="815" y="650" text-anchor="middle">C — answer_key.json</text><text class="sub" x="815" y="672" text-anchor="middle">Suggested RAG topics</text><text class="sub" x="815" y="691" text-anchor="middle">(not verified legal verdicts)</text><text class="foot" x="815" y="712" text-anchor="middle">TEST ONLY</text><path class="arrow" d="M690 678H704"/>
-<rect class="gold" x="15" y="626" width="220" height="104" rx="10"/><text class="tag" x="125" y="650" text-anchor="middle">Regulatory knowledge base</text><text class="sub" x="125" y="673" text-anchor="middle">Official MPA / Customs</text><text class="sub" x="125" y="693" text-anchor="middle">sources (not A/B/C)</text><path class="arrow" d="M235 679H249"/>
-<path class="arrow" d="M470 730V781"/>
-<rect class="box" x="250" y="781" width="440" height="86" rx="11"/><text class="head" x="470" y="812" text-anchor="middle">5. Python risk triage + report</text><text class="sub" x="470" y="838" text-anchor="middle">Issue findings, evidence, and human-review recommendation</text>
-<rect class="gold" x="705" y="781" width="220" height="86" rx="10"/><text class="tag" x="815" y="804" text-anchor="middle">C — answer_key.json</text><text class="sub" x="815" y="826" text-anchor="middle">Evaluate expected findings</text><text class="sub" x="815" y="845" text-anchor="middle">and triage labels</text><path class="arrow" d="M690 827H704"/>
-<path class="arrow" d="M470 867V923"/>
-<rect class="box" x="250" y="923" width="440" height="78" rx="11"/><text class="head" x="470" y="953" text-anchor="middle">6. Web app result</text><text class="sub" x="470" y="980" text-anchor="middle">Show findings, citations and human escalation</text>
-<text class="foot" x="470" y="1045" text-anchor="middle">B / C / V are hidden evaluation files; never expose them to the runtime LLM or RAG index.</text>
-<text class="foot" x="470" y="1068" text-anchor="middle">The validator checks document consistency, not legal compliance.</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1130" viewBox="0 0 1500 1130" role="img" aria-labelledby="title desc">
+<title id="title">PortDoc AI implemented workflow and synthetic dataset mapping</title>
+<desc id="desc">Runtime: PDF upload, extraction, deterministic validation, conditional document re-extraction, review triage, conditional RAG context, JSON report and Streamlit review. Dataset ground truths, answer keys and verification fixtures are offline evaluation references only.</desc>
+<defs><style>
+text{font-family:Arial,Helvetica,sans-serif;fill:#193249} .h{font-weight:700;font-size:30px}.sub{font-size:17px;fill:#536779}.small{font-size:15px;fill:#536779}.label{font-size:20px;font-weight:700}.detail{font-size:16px}.tiny{font-size:14px;fill:#536779}.pill{font-size:14px;font-weight:700;fill:#20635a}.offline{font-size:17px;font-weight:700}.arrow{fill:none;stroke:#5d788c;stroke-width:3;stroke-linecap:round;stroke-linejoin:round} .dash{stroke-dasharray:7 7;stroke:#98a7b4;stroke-width:2;fill:none}</style><marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="none" stroke="#5d788c" stroke-width="1.5"/></marker></defs>
+<rect width="1500" height="1130" fill="#ffffff"/>
+<text x="72" y="64" class="h">PortDoc AI — Implemented Workflow &amp; Dataset Mapping</text>
+<text x="72" y="96" class="sub">Based on feat/rag-in-pipeline • academic document pre-check • no regulatory clearance</text>
+<rect x="60" y="125" width="855" height="933" rx="20" fill="#fff" stroke="#dbe3e9" stroke-width="2"/>
+<rect x="944" y="125" width="496" height="933" rx="20" fill="#fbfcfd" stroke="#dbe3e9" stroke-width="2"/>
+<text x="82" y="160" class="offline">RUNTIME APPLICATION</text>
+<text x="968" y="160" class="offline">OFFLINE EVALUATION ONLY</text>
+<rect x="76" y="183" width="820" height="95" rx="14" fill="#e9f4f1" stroke="#a6cdc3" stroke-width="2"/>
+<text x="99" y="217" class="label">A · Upload synthetic shipping PDFs</text>
+<text x="99" y="242" class="detail">Streamlit: B/L, invoice, packing list, DGD</text>
+<text x="99" y="262" class="detail">Selectable-text PDFs; S04 intentionally has no DGD</text>
+<rect x="76" y="310" width="820" height="95" rx="14" fill="#f5f8fa" stroke="#cad8e1" stroke-width="2"/>
+<text x="99" y="344" class="label">1 · Gemini extraction</text>
+<text x="99" y="369" class="detail">PyMuPDF text + document identification + Gemini</text>
+<text x="99" y="389" class="detail">Output: documents, upload_inventory, extraction_metadata</text>
+<rect x="76" y="437" width="820" height="95" rx="14" fill="#e9f4f1" stroke="#a6cdc3" stroke-width="2"/>
+<text x="99" y="471" class="label">2 · Deterministic validation</text>
+<text x="99" y="496" class="detail">Backend/validator.py: presence, weight, container, DG class</text>
+<text x="99" y="516" class="detail">Uploaded-but-unextracted PDFs → extraction_failed</text>
+<rect x="76" y="564" width="820" height="95" rx="14" fill="#f5f8fa" stroke="#cad8e1" stroke-width="2"/>
+<text x="99" y="598" class="label">3 · Conditional verification</text>
+<text x="99" y="623" class="detail">If comparable findings flagged: re-extract selected whole PDFs</text>
+<text x="99" y="643" class="detail">Up to 2 rounds; rerun validation after each round</text>
+<rect x="76" y="691" width="820" height="95" rx="14" fill="#e9f4f1" stroke="#a6cdc3" stroke-width="2"/>
+<text x="99" y="725" class="label">4 · Human-review triage</text>
+<text x="99" y="750" class="detail">Backend/triage.py: suggested priority and review flag</text>
+<text x="99" y="770" class="detail">Illustrative recommendations, not legal risk classifications</text>
+<rect x="76" y="818" width="820" height="95" rx="14" fill="#f5f8fa" stroke="#cad8e1" stroke-width="2"/>
+<text x="99" y="852" class="label">5 · Conditional regulatory context (RAG)</text>
+<text x="99" y="877" class="detail">Only applicable findings: DG class conflict or missing DGD</text>
+<text x="99" y="897" class="detail">Planner → retrieval → citation-checked answer; other findings N/A</text>
+<rect x="76" y="945" width="820" height="95" rx="14" fill="#e9f4f1" stroke="#a6cdc3" stroke-width="2"/>
+<text x="99" y="979" class="label">6 · JSON report + Streamlit results</text>
+<text x="99" y="1004" class="detail">Findings, evidence, checks, priority and regulatory context</text>
+<text x="99" y="1024" class="detail">Human review required; compliance is NOT ASSESSED</text>
+<path d="M486 279 V302" class="arrow" marker-end="url(#arrow)"/>
+<path d="M486 406 V429" class="arrow" marker-end="url(#arrow)"/>
+<path d="M486 533 V556" class="arrow" marker-end="url(#arrow)"/>
+<path d="M486 660 V683" class="arrow" marker-end="url(#arrow)"/>
+<path d="M486 787 V810" class="arrow" marker-end="url(#arrow)"/>
+<path d="M486 914 V937" class="arrow" marker-end="url(#arrow)"/>
+<rect x="965" y="204" width="454" height="144" rx="14" fill="#f5f9fc" stroke="#bed0df" stroke-width="2"/>
+<rect x="965" y="382" width="454" height="150" rx="14" fill="#f5f9fc" stroke="#bed0df" stroke-width="2"/>
+<rect x="965" y="568" width="454" height="150" rx="14" fill="#f5f9fc" stroke="#bed0df" stroke-width="2"/>
+<rect x="965" y="752" width="454" height="190" rx="14" fill="#f5f9fc" stroke="#bed0df" stroke-width="2"/>
+<text x="989" y="236" class="label">B · ground_truth.json</text>
+<text x="989" y="266" class="detail">shipment_truth: baseline shipment</text>
+<text x="989" y="290" class="detail">document_truth: values actually printed</text>
+<text x="989" y="314" class="small">Used to score extraction, not as LLM input</text>
+<text x="989" y="414" class="label">C · answer_key.json</text>
+<text x="989" y="444" class="detail">Expected finding types and counts</text>
+<text x="989" y="468" class="detail">Verification and triage expectations</text>
+<text x="989" y="492" class="small">RAG topics are suggestions, not legal labels</text>
+<text x="989" y="600" class="label">V · verification fixtures</text>
+<text x="989" y="630" class="detail">V01: simulated false mismatch clears</text>
+<text x="989" y="654" class="detail">V02: genuine mismatch persists</text>
+<text x="989" y="678" class="small">Mock offline data; not loaded by app</text>
+<text x="989" y="784" class="label">Actual test boundaries</text>
+<text x="989" y="815" class="detail">B: compare with extraction documents</text>
+<text x="989" y="841" class="detail">C: compare with validation and triage</text>
+<text x="989" y="867" class="detail">V: feed fake re-extractor to verify()</text>
+<text x="989" y="899" class="small">No B/C/V in runtime prompts or RAG index</text>
+<path d="M932 348 h-28" class="dash"/>
+<path d="M932 501 h-28" class="dash"/>
+<path d="M932 718 h-28" class="dash"/>
+<text x="978" y="997" class="small">Dataset: 6 scenarios · 23 synthetic PDFs</text>
+<text x="978" y="1024" class="small">Never treat prototype output as DG approval</text>
+<text x="72" y="1100" class="tiny">Implementation note: triage occurs before regulatory context attachment in Backend/run_pipeline.py.</text>
 </svg>
