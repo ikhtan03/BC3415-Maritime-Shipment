@@ -5,6 +5,12 @@ from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.units import mm
 ROOT=os.path.dirname(__file__)
+if (os.path.exists(os.path.join(ROOT, "test_cases")) or
+        os.path.exists(os.path.join(ROOT, "dataset_manifest.csv"))):
+    raise SystemExit(
+        "Dataset already exists. Generation stopped to prevent overwriting "
+        "PDFs, ground truth, and augmented answer keys."
+    )
 base={"shipment_id":"SG-DEMO-001","movement_type":"import","shipper":"Meridian Components Sdn Bhd (FICTIONAL)","consignee":"Harbour Tech Pte Ltd (FICTIONAL)","carrier":"Example Ocean Lines (FICTIONAL)","vessel":"DEMO MERIDIAN","voyage":"DM102A","port_of_loading":"Port Klang, Malaysia","port_of_discharge":"Singapore","terminal":"PSA Singapore (scenario assumption)","shipment_date":"2026-10-15","document_reference":"BL-DEMO-001","invoice_number":"INV-DEMO-001","container_id":"MSCU6639870","seal_number":"SEAL-DEMO-104","cargo_description":"Paint products, packaged in steel drums (illustrative DG cargo)","proper_shipping_name":"PAINT","un_number":"UN1263","dg_class":"3","package_count":100,"package_type":"Steel drums (illustrative; verify packaging suitability)","gross_cargo_weight_kg":18500,"net_cargo_weight_kg":17000,"hs_code":"NOT_VERIFIED","declared_invoice_value_usd":54000}
 # Valid ISO 6346 checksum computed instead of assuming sample ID checksum
 mapping={str(i):i for i in range(10)}
