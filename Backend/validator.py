@@ -5,16 +5,25 @@ No shipment_truth or answer_key is used by the validator.
 """
 import argparse
 import json
+import re
 from pathlib import Path
 
 REQUIRED = ('bill_of_lading', 'commercial_invoice', 'packing_list', 'dangerous_goods_declaration')
+
+
+NUMBER_WITH_UNIT = re.compile(r"\s*([\d,]+(?:\.\d+)?)\s*(?:kg|kgs|kilograms?)?\s*", re.IGNORECASE)
 
 
 def clean(value):
     if value is None:
         return None
     if isinstance(value, str):
-        value = value.strip()
+        # A class written as "CLASS 9" is the same class as "9".
+        value = re.sub(r"^CLASS\s+", "", value.strip(), flags=re.IGNORECASE)
+        if NUMBER_WITH_UNIT.fullmatch(value):
+            # "18,500 kg" and 18500 are the same weight: drop the commas and unit before comparing.
+            number = float(NUMBER_WITH_UNIT.fullmatch(value).group(1).replace(",", ""))
+            return int(number) if number.is_integer() else number
         return value.upper() if value else None
     return value
 
@@ -37,7 +46,7 @@ def check_pair(documents, field, reference, comparison, issue_type, action):
     }]
 
 
-def validate(documents):
+def validate(documents, uploaded=None):
     """Evaluate required document presence and selected comparable fields.
 
     Missing individual fields are not treated as required until field-level rules
@@ -49,9 +58,21 @@ def validate(documents):
         if not isinstance(fields, dict):
             raise TypeError(f'{doc} must map to a field dictionary')
 
+    uploaded = set(uploaded or [])
     findings = []
     for doc in REQUIRED:
-        if doc not in documents:
+        if doc in documents:
+            continue
+        if doc in uploaded:
+            # The PDF was received but not extracted, so it cannot be said to be missing.
+            findings.append({
+                'finding_type': 'extraction_failed',
+                'affected_document': doc,
+                'affected_field': None,
+                'expected_action': 're_run_extraction',
+                'explanation': f'{doc} was uploaded but could not be extracted; re-run extraction before judging it.'
+            })
+        else:
             findings.append({
                 'finding_type': 'missing_document',
                 'affected_document': doc,
@@ -70,9 +91,33 @@ def validate(documents):
     findings += check_pair(documents, 'dg_class', 'bill_of_lading',
                            'dangerous_goods_declaration', 'dg_class_conflict', 'qualified_human_review')
 
+    # Comparisons that could not run: a document or field they need is missing or unreadable.
+    # These are reported separately, so a check that did not run is never shown as a pass.
+    comparisons = [
+        ('Gross cargo weight', 'gross_cargo_weight_kg', 'bill_of_lading', 'packing_list'),
+        ('Container ID', 'container_id', 'packing_list', 'bill_of_lading'),
+        ('Dangerous goods class', 'dg_class', 'bill_of_lading', 'dangerous_goods_declaration'),
+    ]
+    checks_not_completed = []
+    for label, field, reference, comparison in comparisons:
+        problems = []
+        for doc in (reference, comparison):
+            if doc not in documents:
+                problems.append(f'{doc} is missing')
+            elif clean(documents[doc].get(field)) is None:
+                problems.append(f'{field} could not be read from {doc}')
+        if problems:
+            checks_not_completed.append({
+                'check': label,
+                'field': field,
+                'documents': [reference, comparison],
+                'reason': '; '.join(problems)
+            })
+
     # Do not infer legal clearance from the absence of discrepancies.
     return {
         'findings': findings,
+        'checks_not_completed': checks_not_completed,
         'issue_count': len(findings),
         'review_recommended': bool(findings),
         'qualified_human_review': any(f['expected_action'] == 'qualified_human_review' for f in findings),

@@ -1,87 +1,152 @@
-# Maritime DG Compliance Assistant — Agentic Synthetic Dataset
+# Maritime DG Compliance Assistant — Synthetic Dataset
 
-## Scope
+## 1. Scope
 
-**Academic pre-check of containerised packaged dangerous-goods imports into Singapore through PSA.** Not a Customs permit, MPA/PSA notification, legal compliance decision or regulatory approval.
+This dataset supports **PortDoc AI**, an academic prototype for preliminary document checks of containerised packaged dangerous-goods imports into Singapore via PSA.
 
-## Dataset 
+The prototype extracts information from shipping PDFs, identifies selected document inconsistencies, supports re-extraction of flagged documents, retrieves regulatory context for applicable findings and suggests human-review priorities.
 
-**6 test cases · 23 PDFs · 6 ground-truth JSONs · 6 answer-key JSONs · 2 verification fixtures**
+**Important:** The prototype does not determine regulatory compliance, verify the legal correctness of dangerous-goods classifications, submit permits or declarations, or replace qualified human review.
 
-| Label | File | Role |
+All shipping records are synthetic.
+
+## 2. Dataset Contents
+
+**6 scenarios · 23 PDFs · 6 ground-truth JSON files · 6 answer-key JSON files · 2 verification fixtures**
+
+| Type | File | Purpose |
 |---|---|---|
-| **A** | Shipping PDFs in `test_cases/SXX.../` | **Actual web-app input**: Bill of Lading, Invoice, Packing List, DGD (S04 intentionally lacks DGD) |
-| **B** | `ground_truth.json` | **Hidden extraction reference**: compare the LLM-extracted JSON with `ground_truth.json → document_truth`, which holds exact PDF values, including deliberately incorrect values; `shipment_truth` holds intended baseline |
-| **C** | `answer_key.json` | **Hidden evaluation reference**: compare Python findings with `answer_key.json → expected_findings`; also records injected issues, expected rechecks, suggested RAG search topics, and illustrative triage decisions |
-| **V** | `verification_fixtures/*.json` | **Test-only mock LLM outputs** to verify that the loop can clear a false positive and retain a genuine mismatch |
+| A — Shipping documents | `test_cases/SXX_*/` | Synthetic PDF inputs: Bill of Lading, Commercial Invoice, Packing List and Dangerous Goods Declaration |
+| B — Ground truth | `ground_truth.json` | Reference values printed in each PDF, including deliberately injected discrepancies |
+| C — Answer key | `answer_key.json` | Expected discrepancy findings, verification expectations, suggested regulatory topics and illustrative triage outcomes |
+| V — Verification fixtures | `verification_fixtures/` | Mock extraction results used to test verification behaviour without calling Gemini |
 
-**Only A is uploaded to the app. B, C and V must not be placed into the runtime prompt or RAG index.**
+Only **A** is uploaded to the Streamlit application. B, C and V are offline testing references and must not be provided to the runtime model as answers or indexed in the regulatory knowledge base.
 
-## Agentic system workflow and data mapping
+`dataset_manifest.csv` summarises the six scenarios.
 
-![Agentic system workflow](system_workflow.svg)
+## 3. Test Scenarios
 
-1. **Upload A** → LLM extracts PDFs into JSON. **Offline test B:** compare extracted JSON against `ground_truth.json → document_truth` (not against the PDFs manually).
-2. **Run `backend/validator.py`** on the extracted JSON. **Offline test C:** compare its findings against `answer_key.json → expected_findings`. The validator does not read answer keys at runtime.
-3. **Verify loop (maximum 2 rounds):** for each flagged field, request targeted re-extraction; if values change, rerun affected rules. If unchanged, retain supported discrepancies. A missing document requires an upload-inventory check, not re-extraction. **C** describes expected checks. **V** supplies simulated extraction mistakes for isolated loop tests.
-4. **Agentic RAG query planning:** planner selects pertinent regulatory search topics using extracted DG details; RAG retrieves sources curated by the regulatory workstream. **C** has *suggested topics only*, not verified regulatory ground truth.
-5. **Python triage → report → human review when needed.** Compare issue types and illustrative escalation decisions with **C**.
-
-## Exact JSON field mapping by workflow stage
-
-The following files are **test-only references**, not inputs to the live LLM, Python validator or RAG engine. Their values are used *after* a stage runs to evaluate the result.
-
-| Workflow stage | JSON file | Fields used | What it evaluates |
-|---|---|---|---|
-| **Agentic Verification Loop** | **B:** `ground_truth.json` | `document_truth` | Whether re-extracted values match the labelled values printed in the PDFs |
-| **Agentic Verification Loop** | **C:** `answer_key.json` | `verification_expectations` | Which fields should be rechecked and which findings should remain |
-| **Agentic Verification Loop** | **V:** `verification_fixtures/*.json` | Mock first-pass and corrected extraction values | Whether verification removes a simulated extraction error or preserves a real discrepancy |
-| **Agentic RAG Planning** | **C:** `answer_key.json` | `rag_planning_expectations` | Whether the planner selects relevant regulatory topics; these are suggestions, **not verified legal verdicts** |
-| **Python Triage & Reporting** | **C:** `answer_key.json` | `expected_findings`, `expected_issue_count`, `triage_expectations` | Whether the system identifies the expected issues and matches the illustrative risk/escalation labels |
-
-**Other essential comparisons:** After initial extraction, compare the LLM output to **B → `document_truth`**. After `run_rules`, compare the returned findings to **C → `expected_findings`**. These comparisons belong in the test harness; the runtime validator should see neither B nor C.
-
-## Six scenarios
-
-| Case | Injected discrepancy | Expected after accurate verification |
+| Case | Description | Expected findings |
 |---|---|---|
-| S01 | None | No injected issues |
-| S02 | Packing List gross cargo mass differs | Retain weight mismatch |
-| S03 | B/L container ID differs | Retain container mismatch |
-| S04 | Missing uploaded DGD | Retain missing-document finding |
-| S05 | DGD DG class differs from B/L | Retain class conflict |
-| S06 | Weight, container ID, class | Retain all three findings |
+| S01 | Correct shipment | 0 |
+| S02 | Packing List gross weight differs | 1 — weight mismatch |
+| S03 | Bill of Lading container ID differs | 1 — container mismatch |
+| S04 | Dangerous Goods Declaration missing | 1 — missing document |
+| S05 | DGD and B/L DG classes conflict | 1 — DG class conflict |
+| S06 | Multiple injected discrepancies | 3 — weight, container and DG class |
 
-**Verification fixtures:** `V01` injects a *false* first-pass weight mismatch into S01 extraction JSON, then corrects it; `V02` confirms S02's genuine mismatch remains. These are **not extra shipping PDFs**.
+S01–S03 and S05–S06 contain four PDFs each. S04 contains three PDFs because the DGD is intentionally absent.
 
-## Python validator
+The dataset uses one fictional shipment with controlled variations. It is an integration/demo benchmark, not a statistically representative model evaluation dataset.
 
-Run all six test cases from the repository root:
+## 4. Implemented Application Workflow
+
+The application implementation is maintained in `Backend/` on the `feat/rag-in-pipeline` branch.
+
+1. **PDF upload:** Streamlit accepts selectable-text PDFs. The prototype does not support scanned/image-only PDFs.
+2. **Document extraction:** Gemini extracts structured fields into a document-type mapping, with upload inventory and extraction metadata.
+3. **Deterministic validation:** `Backend/validator.py` compares selected fields and distinguishes missing documents from uploaded documents that failed extraction.
+4. **Verification:** `Backend/verification.py` re-extracts selected documents associated with flagged comparison findings, up to two rounds, then reruns validation. Re-extraction is document-level rather than field-only.
+5. **Triage:** `Backend/triage.py` assigns an illustrative suggested review priority and human-review recommendation.
+6. **Regulatory context:** `Backend/rag/` retrieves supporting Singapore regulatory passages for applicable findings. Automatic regulatory-context questions currently cover DG class conflicts and missing DGD findings. The planner may generate more specific questions, with fixed-question fallback.
+7. **Reporting:** The pipeline saves structured JSON results, and the Streamlit interface presents findings, evidence, review recommendations and applicable regulatory context.
+
+The RAG system explains relevant source material and does not issue shipment compliance verdicts.
+
+See `system_workflow.svg` for the corresponding architecture diagram.
+
+## 5. Ground Truth and Evaluation
+
+Each scenario's `ground_truth.json` contains:
+
+- `shipment_truth`: Baseline shipment information.
+- `document_truth`: Values appearing in each synthetic document, including deliberately incorrect values.
+
+**Extraction accuracy must be evaluated against `document_truth`, not `shipment_truth`.**
+
+The runtime extraction output is wrapped in a `documents` mapping. The validator consumes the document-type-to-fields mapping, not the entire extraction result.
+
+Field comparison during extraction evaluation may require normalising harmless representation differences, such as `18500` versus `"18,500 kg"`. Missing or unreadable fields must not automatically be treated as correct.
+
+Each `answer_key.json` contains expected discrepancy findings and additional test expectations. The deterministic validator does not consume answer keys during normal execution.
+
+Some RAG topics in the answer keys are broader suggested research topics, not mandatory queries or verified legal outcomes.
+
+## 6. Verification Fixtures
+
+- **V01 — False weight mismatch:** The first extraction introduces a mismatch that does not exist in the underlying PDFs. Correct re-extraction should remove the finding.
+- **V02 — Genuine weight mismatch:** The underlying documents disagree. Correct re-extraction should retain the finding.
+
+These fixtures represent mock extraction data for offline tests, not extra PDFs or real Gemini outputs.
+
+The implemented verification loop selects document groups according to finding type and re-extracts whole documents. Its behaviour should be evaluated using the actual `verify()` interface and the implemented recheck mapping.
+
+## 7. Review Priorities
+
+The implemented prototype triage policy is:
+
+| Condition | Suggested priority |
+|---|---|
+| No findings | Low |
+| One weight mismatch | Medium |
+| One container mismatch | Medium |
+| One missing document | Medium |
+| DG class conflict | High |
+| Two or more findings | High |
+
+An uploaded document that fails extraction is flagged for review because the result is incomplete.
+
+These are illustrative review priorities, **not legally defined risk classifications**. No findings detected does not mean a shipment is compliant.
+
+## 8. Offline Testing
+
+Run commands from the repository root.
+
+**Validate the six labelled synthetic cases:**
 
 ```bash
-python backend/validator.py --test .
+python Backend/validator.py --test data
 ```
 
-Validate a real LLM output saved as JSON (document-type keys mapping to field objects):
+**Run the existing verification tests:**
 
 ```bash
-python backend/validator.py --input extracted_documents.json
+python Backend/test_verification.py
 ```
 
-Import in the backend: `from backend.validator import validate` then `validate(extracted_documents)`. No extra packages are required. `--test` uses B as mock extraction output and C to score findings; it does **not** test live PDF extraction, agent loops or RAG.
+**Run the existing triage tests:**
 
-## Integration notes
+```bash
+python Backend/test_triage.py
+```
 
-- Extracted JSON should have the same document keys and field names as `ground_truth.json → document_truth`.
-- The verification loop is bounded to **two rounds** and must keep provenance (PDF, field, value, extraction attempt). A second extraction agreeing with the first is evidence of repeatability, not independent proof that the document is correct.
-- `C.verification_expectations`, `C.rag_planning_expectations`, and `C.triage_expectations` describe *expected tests*, not data to feed the agent.
-- Suggested RAG queries can vary in wording. Evaluate retrieved citations and rule applicability after the regulatory workstream adds verified reference labels. Existing `regulatory_checks` remains empty; no compliance verdict is asserted.
-- `dataset_manifest.csv` indexes cases. `build.py` is the **original PDF generator**. **Caution:** rerunning it overwrites these augmented JSON files; retain the supplied dataset ZIP as the evaluation reference.
+**Run the existing extraction-status tests:**
 
-## Limits
+```bash
+python Backend/test_validation_status.py
+```
 
-The forms are fictional educational approximations; DGD layout follows the supplied UNECE reference visually. `UN1263 / PAINT / Class 3`, packaging, HS classification and shipping suitability are **not fully verified**. A missing uploaded DGD does not establish that an external MPA DG notification was omitted. One underlying shipment and six variants are a **demo/integration benchmark**, not a statistically representative evaluation.
+These tests do not require live Gemini API calls. They do not, by themselves, establish PDF extraction accuracy or full end-to-end regulatory correctness.
 
-## Video scope line
+To start the Streamlit application locally, follow the setup and dependency instructions in `Backend/README.md`. Live model operations require the appropriate API configuration.
 
-“Our prototype conducts explainable pre-submission checks for containerised packaged dangerous-goods imports into Singapore through PSA. A bounded verification loop rechecks flagged document fields, and an AI planner selects relevant regulatory retrieval queries; Python rules support issue detection and triage. Findings are recommendations for human review, not official clearance.”
+## 9. Dataset Generation
+
+`build.py` is the original synthetic document generator.
+
+**Caution:** The existing generator rewrites generated PDFs, ground-truth files, answer keys and the manifest. Its answer-key generation does not preserve all subsequently added verification, RAG and triage annotations.
+
+Do not rerun `build.py` against the maintained dataset until its overwrite behaviour has been made safe and verified.
+
+## 10. Limitations
+
+- All documents and shipment parties are fictional.
+- The DGD visually approximates a multimodal dangerous-goods form, but is not a valid executed shipping declaration.
+- UN1263 / PAINT / Class 3 is illustrative; the complete shipping classification, packaging suitability and HS classification have not been independently verified.
+- The validator only performs selected deterministic comparisons, not comprehensive field-level or legal checks.
+- RAG outputs are limited by the included regulatory corpus and citation verification.
+- A missing uploaded DGD is a document-completeness finding, not evidence that a separate MPA notification was omitted.
+- The six cases share one baseline shipment and should not be presented as a statistically robust accuracy benchmark.
+
+**All findings are preliminary and intended to support qualified human review.**

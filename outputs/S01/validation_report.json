@@ -1,106 +1,374 @@
 {
   "project": "PortDoc AI",
-  "generated_at_utc": "2026-10-28T02:23:54.852042+00:00",
+  "generated_at_utc": "2026-11-05T09:32:02.150803+00:00",
   "input": {
-    "pdf_folder": "C:\\Users\\ikhta\\OneDrive\\Documents\\EUR\\Year 4\\Exchange\\BC3415 AI in Accounting & Finance\\Maritime Group Project\\BC3415-Maritime-Shipment\\data\\test_cases\\S01_correct",
+    "pdf_folder": "C:\\Users\\Unnati Chaturvedi\\Downloads\\BC3415-fixes\\data\\test_cases\\S01_correct",
     "uploaded_pdf_count": 4,
     "identified_pdf_count": 4,
-    "extracted_document_count": 0
+    "extracted_document_count": 4
   },
   "extraction": {
     "upload_inventory": [
       {
         "filename": "bill_of_lading.pdf",
-        "path": "C:\\Users\\ikhta\\OneDrive\\Documents\\EUR\\Year 4\\Exchange\\BC3415 AI in Accounting & Finance\\Maritime Group Project\\BC3415-Maritime-Shipment\\data\\test_cases\\S01_correct\\bill_of_lading.pdf",
+        "path": "C:\\Users\\Unnati Chaturvedi\\Downloads\\BC3415-fixes\\data\\test_cases\\S01_correct\\bill_of_lading.pdf",
         "document_type": "bill_of_lading",
-        "status": "extraction_failed",
-        "error": "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash, description: Generate content requests per day limit exceeded on Free Tier. See https://ai.google.dev/gemini-api/docs/rate-limits.\\nPlease retry in 4h36m6.465543162s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'description': 'Generate content requests per day limit exceeded on Free Tier. See https://ai.google.dev/gemini-api/docs/rate-limits.', 'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.8-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '16566s'}]}}"
+        "status": "extracted",
+        "error": null
       },
       {
         "filename": "commercial_invoice.pdf",
-        "path": "C:\\Users\\ikhta\\OneDrive\\Documents\\EUR\\Year 4\\Exchange\\BC3415 AI in Accounting & Finance\\Maritime Group Project\\BC3415-Maritime-Shipment\\data\\test_cases\\S01_correct\\commercial_invoice.pdf",
+        "path": "C:\\Users\\Unnati Chaturvedi\\Downloads\\BC3415-fixes\\data\\test_cases\\S01_correct\\commercial_invoice.pdf",
         "document_type": "commercial_invoice",
-        "status": "extraction_failed",
-        "error": "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash, description: Generate content requests per day limit exceeded on Free Tier. See https://ai.google.dev/gemini-api/docs/rate-limits.\\nPlease retry in 4h36m6.218748857s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'description': 'Generate content requests per day limit exceeded on Free Tier. See https://ai.google.dev/gemini-api/docs/rate-limits.', 'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.8-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '16566s'}]}}"
+        "status": "extracted",
+        "error": null
       },
       {
         "filename": "dangerous_goods_declaration.pdf",
-        "path": "C:\\Users\\ikhta\\OneDrive\\Documents\\EUR\\Year 4\\Exchange\\BC3415 AI in Accounting & Finance\\Maritime Group Project\\BC3415-Maritime-Shipment\\data\\test_cases\\S01_correct\\dangerous_goods_declaration.pdf",
+        "path": "C:\\Users\\Unnati Chaturvedi\\Downloads\\BC3415-fixes\\data\\test_cases\\S01_correct\\dangerous_goods_declaration.pdf",
         "document_type": "dangerous_goods_declaration",
-        "status": "extraction_failed",
-        "error": "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash, description: Generate content requests per day limit exceeded on Free Tier. See https://ai.google.dev/gemini-api/docs/rate-limits.\\nPlease retry in 4h36m5.908908908s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'description': 'Generate content requests per day limit exceeded on Free Tier. See https://ai.google.dev/gemini-api/docs/rate-limits.', 'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.8-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '16565s'}]}}"
+        "status": "extracted",
+        "error": null
       },
       {
         "filename": "packing_list.pdf",
-        "path": "C:\\Users\\ikhta\\OneDrive\\Documents\\EUR\\Year 4\\Exchange\\BC3415 AI in Accounting & Finance\\Maritime Group Project\\BC3415-Maritime-Shipment\\data\\test_cases\\S01_correct\\packing_list.pdf",
+        "path": "C:\\Users\\Unnati Chaturvedi\\Downloads\\BC3415-fixes\\data\\test_cases\\S01_correct\\packing_list.pdf",
         "document_type": "packing_list",
-        "status": "extraction_failed",
-        "error": "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash, description: Generate content requests per day limit exceeded on Free Tier. See https://ai.google.dev/gemini-api/docs/rate-limits.\\nPlease retry in 4h36m5.556316174s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'description': 'Generate content requests per day limit exceeded on Free Tier. See https://ai.google.dev/gemini-api/docs/rate-limits.', 'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.8-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '16565s'}]}}"
+        "status": "extracted",
+        "error": null
       }
     ],
     "extraction_metadata": {
-      "bill_of_lading.pdf": {
+      "bill_of_lading": {
         "source_pdf": "bill_of_lading.pdf",
         "document_type": "bill_of_lading",
-        "status": "extraction_failed",
-        "error": "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash, description: Generate content requests per day limit exceeded on Free Tier. See https://ai.google.dev/gemini-api/docs/rate-limits.\\nPlease retry in 4h36m6.465543162s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'description': 'Generate content requests per day limit exceeded on Free Tier. See https://ai.google.dev/gemini-api/docs/rate-limits.', 'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.8-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '16566s'}]}}"
+        "fields": {
+          "document_reference": "BL-DEMO-001",
+          "shipment_date": "2026-10-15",
+          "shipper": "Meridian Components Sdn Bhd (FICTIONAL)",
+          "consignee": "Harbour Tech Pte Ltd (FICTIONAL)",
+          "carrier": "Example Ocean Lines (FICTIONAL)",
+          "vessel": "DEMO MERIDIAN",
+          "voyage": "DM102A",
+          "port_of_loading": "Port Klang, Malaysia",
+          "port_of_discharge": "Singapore",
+          "container_id": "MSCU6639878",
+          "seal_number": "SEAL-DEMO-104",
+          "cargo_description": "Paint products, packaged in steel drums (illustrative DG cargo)",
+          "package_count": 100,
+          "gross_cargo_weight_kg": 18500,
+          "un_number": "UN1263",
+          "dg_class": "3"
+        },
+        "provenance": {
+          "document_reference": {
+            "page": 1,
+            "quote": "REFERENCE: BL-DEMO-001"
+          },
+          "shipment_date": {
+            "page": 1,
+            "quote": "2026-10-15"
+          },
+          "shipper": {
+            "page": 1,
+            "quote": "Meridian Components Sdn Bhd (FICTIONAL)"
+          },
+          "consignee": {
+            "page": 1,
+            "quote": "Harbour Tech Pte Ltd (FICTIONAL)"
+          },
+          "carrier": {
+            "page": 1,
+            "quote": "Example Ocean Lines (FICTIONAL)"
+          },
+          "vessel": {
+            "page": 1,
+            "quote": "DEMO MERIDIAN"
+          },
+          "voyage": {
+            "page": 1,
+            "quote": "DM102A"
+          },
+          "port_of_loading": {
+            "page": 1,
+            "quote": "Port Klang, Malaysia"
+          },
+          "port_of_discharge": {
+            "page": 1,
+            "quote": "Singapore"
+          },
+          "container_id": {
+            "page": 1,
+            "quote": "MSCU6639878"
+          },
+          "seal_number": {
+            "page": 1,
+            "quote": "SEAL-DEMO-104"
+          },
+          "cargo_description": {
+            "page": 1,
+            "quote": "Paint products, packaged in steel drums (illustrative DG\ncargo)"
+          },
+          "package_count": {
+            "page": 1,
+            "quote": "100"
+          },
+          "gross_cargo_weight_kg": {
+            "page": 1,
+            "quote": "18,500 kg"
+          },
+          "un_number": {
+            "page": 1,
+            "quote": "UN1263"
+          },
+          "dg_class": {
+            "page": 1,
+            "quote": "3"
+          }
+        },
+        "extraction_notes": [
+          "The document is a synthetic test record for AI extraction.",
+          "Gross cargo weight was converted to a numeric value (18500) from the string '18,500 kg' as the unit matched the field requirement.",
+          "Cargo description whitespace was normalized for the field value but preserved in the provenance quote."
+        ],
+        "status": "extracted"
       },
-      "commercial_invoice.pdf": {
+      "commercial_invoice": {
         "source_pdf": "commercial_invoice.pdf",
         "document_type": "commercial_invoice",
-        "status": "extraction_failed",
-        "error": "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash, description: Generate content requests per day limit exceeded on Free Tier. See https://ai.google.dev/gemini-api/docs/rate-limits.\\nPlease retry in 4h36m6.218748857s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'description': 'Generate content requests per day limit exceeded on Free Tier. See https://ai.google.dev/gemini-api/docs/rate-limits.', 'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.8-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '16566s'}]}}"
+        "fields": {
+          "invoice_number": "INV-DEMO-001",
+          "shipment_date": "2026-10-15",
+          "shipper": "Meridian Components Sdn Bhd (FICTIONAL)",
+          "consignee": "Harbour Tech Pte Ltd (FICTIONAL)",
+          "port_of_loading": "Port Klang, Malaysia",
+          "port_of_discharge": "Singapore",
+          "cargo_description": "Paint products, packaged in steel drums (illustrative DG cargo)",
+          "package_count": "100",
+          "gross_cargo_weight_kg": "18,500 kg",
+          "hs_code": "NOT_VERIFIED",
+          "declared_invoice_value_usd": "USD 54,000.00"
+        },
+        "provenance": {
+          "invoice_number": {
+            "page": 1,
+            "quote": "INV-DEMO-001"
+          },
+          "shipment_date": {
+            "page": 1,
+            "quote": "2026-10-15"
+          },
+          "shipper": {
+            "page": 1,
+            "quote": "Meridian Components Sdn Bhd (FICTIONAL)"
+          },
+          "consignee": {
+            "page": 1,
+            "quote": "Harbour Tech Pte Ltd (FICTIONAL)"
+          },
+          "port_of_loading": {
+            "page": 1,
+            "quote": "Port Klang, Malaysia"
+          },
+          "port_of_discharge": {
+            "page": 1,
+            "quote": "Singapore"
+          },
+          "cargo_description": {
+            "page": 1,
+            "quote": "Paint products, packaged in steel drums (illustrative DG\ncargo)"
+          },
+          "package_count": {
+            "page": 1,
+            "quote": "100"
+          },
+          "gross_cargo_weight_kg": {
+            "page": 1,
+            "quote": "18,500 kg"
+          },
+          "hs_code": {
+            "page": 1,
+            "quote": "NOT_VERIFIED"
+          },
+          "declared_invoice_value_usd": {
+            "page": 1,
+            "quote": "USD 54,000.00"
+          }
+        },
+        "extraction_notes": [
+          "The shipment_date was extracted from the 'Document Date' field.",
+          "The HS Code is explicitly stated as 'NOT_VERIFIED' in the source text.",
+          "Gross cargo weight and invoice value include currency/unit symbols as printed in the document."
+        ],
+        "status": "extracted"
       },
-      "dangerous_goods_declaration.pdf": {
+      "dangerous_goods_declaration": {
         "source_pdf": "dangerous_goods_declaration.pdf",
         "document_type": "dangerous_goods_declaration",
-        "status": "extraction_failed",
-        "error": "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash, description: Generate content requests per day limit exceeded on Free Tier. See https://ai.google.dev/gemini-api/docs/rate-limits.\\nPlease retry in 4h36m5.908908908s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'description': 'Generate content requests per day limit exceeded on Free Tier. See https://ai.google.dev/gemini-api/docs/rate-limits.', 'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.8-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '16565s'}]}}"
+        "fields": {
+          "document_reference": "BL-DEMO-001",
+          "shipper": "Meridian Components Sdn Bhd (FICTIONAL)",
+          "consignee": "Harbour Tech Pte Ltd (FICTIONAL)",
+          "carrier": "Example Ocean Lines (FICTIONAL)",
+          "seal_number": "SEAL-DEMO-104",
+          "vessel": "DEMO MERIDIAN",
+          "voyage": "DM102A",
+          "port_of_loading": "Port Klang, Malaysia",
+          "port_of_discharge": "Singapore",
+          "container_id": "MSCU6639878",
+          "un_number": "UN1263",
+          "proper_shipping_name": "PAINT",
+          "dg_class": "3",
+          "package_count": "100",
+          "package_type": "Steel drums",
+          "gross_cargo_weight_kg": 18500
+        },
+        "provenance": {
+          "document_reference": {
+            "page": 1,
+            "quote": "BL-DEMO-001"
+          },
+          "shipper": {
+            "page": 1,
+            "quote": "Meridian Components Sdn Bhd (FICTIONAL)"
+          },
+          "consignee": {
+            "page": 1,
+            "quote": "Harbour Tech Pte Ltd (FICTIONAL)"
+          },
+          "carrier": {
+            "page": 1,
+            "quote": "Example Ocean Lines (FICTIONAL)"
+          },
+          "seal_number": {
+            "page": 1,
+            "quote": "SEAL-DEMO-104"
+          },
+          "vessel": {
+            "page": 1,
+            "quote": "DEMO MERIDIAN"
+          },
+          "voyage": {
+            "page": 1,
+            "quote": "DM102A"
+          },
+          "port_of_loading": {
+            "page": 1,
+            "quote": "Port Klang, Malaysia"
+          },
+          "port_of_discharge": {
+            "page": 1,
+            "quote": "Singapore"
+          },
+          "container_id": {
+            "page": 1,
+            "quote": "MSCU6639878"
+          },
+          "un_number": {
+            "page": 1,
+            "quote": "UN1263"
+          },
+          "proper_shipping_name": {
+            "page": 1,
+            "quote": "PAINT"
+          },
+          "dg_class": {
+            "page": 1,
+            "quote": "CLASS 3"
+          },
+          "package_count": {
+            "page": 1,
+            "quote": "100"
+          },
+          "package_type": {
+            "page": 1,
+            "quote": "Steel drums"
+          },
+          "gross_cargo_weight_kg": {
+            "page": 1,
+            "quote": "18500 kg"
+          }
+        },
+        "extraction_notes": [
+          "Vessel and voyage were parsed from the combined field 'DEMO MERIDIAN / DM102A'.",
+          "Dangerous goods details (UN number, proper shipping name, class) were extracted from the description block in box 14.",
+          "Package count and type were extracted from the string '100 Steel drums'.",
+          "Gross cargo weight was converted to a numeric value from '18500 kg' as found in box 19."
+        ],
+        "status": "extracted"
       },
-      "packing_list.pdf": {
+      "packing_list": {
         "source_pdf": "packing_list.pdf",
         "document_type": "packing_list",
-        "status": "extraction_failed",
-        "error": "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash, description: Generate content requests per day limit exceeded on Free Tier. See https://ai.google.dev/gemini-api/docs/rate-limits.\\nPlease retry in 4h36m5.556316174s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'description': 'Generate content requests per day limit exceeded on Free Tier. See https://ai.google.dev/gemini-api/docs/rate-limits.', 'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.8-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '16565s'}]}}"
+        "fields": {
+          "document_reference": "PL-DEMO-001",
+          "shipper": "Meridian Components Sdn Bhd (FICTIONAL)",
+          "consignee": "Harbour Tech Pte Ltd (FICTIONAL)",
+          "container_id": "MSCU6639878",
+          "seal_number": "SEAL-DEMO-104",
+          "cargo_description": "Paint products, packaged in steel drums (illustrative DG cargo)",
+          "package_count": 100,
+          "package_type": "Steel drums (illustrative; verify packaging suitability)",
+          "gross_cargo_weight_kg": 18500,
+          "net_cargo_weight_kg": 17000
+        },
+        "provenance": {
+          "document_reference": {
+            "page": 1,
+            "quote": "REFERENCE: PL-DEMO-001"
+          },
+          "shipper": {
+            "page": 1,
+            "quote": "Meridian Components Sdn Bhd (FICTIONAL)"
+          },
+          "consignee": {
+            "page": 1,
+            "quote": "Harbour Tech Pte Ltd (FICTIONAL)"
+          },
+          "container_id": {
+            "page": 1,
+            "quote": "MSCU6639878"
+          },
+          "seal_number": {
+            "page": 1,
+            "quote": "SEAL-DEMO-104"
+          },
+          "cargo_description": {
+            "page": 1,
+            "quote": "Paint products, packaged in steel drums (illustrative DG cargo)"
+          },
+          "package_count": {
+            "page": 1,
+            "quote": "100"
+          },
+          "package_type": {
+            "page": 1,
+            "quote": "Steel drums (illustrative; verify packaging suitability)"
+          },
+          "gross_cargo_weight_kg": {
+            "page": 1,
+            "quote": "18,500 kg"
+          },
+          "net_cargo_weight_kg": {
+            "page": 1,
+            "quote": "17,000 kg"
+          }
+        },
+        "extraction_notes": [
+          "The document contains both a Packing List reference (PL-DEMO-001) and a Transport Document Reference (BL-DEMO-001). PL-DEMO-001 was extracted as the primary document_reference.",
+          "Weights were converted to numeric values as they were explicitly provided in kg."
+        ],
+        "status": "extracted"
       }
     },
-    "extraction_output_file": "C:\\Users\\ikhta\\OneDrive\\Documents\\EUR\\Year 4\\Exchange\\BC3415 AI in Accounting & Finance\\Maritime Group Project\\BC3415-Maritime-Shipment\\outputs\\S01\\extracted_documents.json"
+    "extraction_output_file": "C:\\Users\\Unnati Chaturvedi\\Downloads\\BC3415-fixes\\outputs\\S01\\extracted_documents.json"
   },
   "validation": {
-    "findings": [
-      {
-        "finding_type": "missing_document",
-        "affected_document": "bill_of_lading",
-        "affected_field": null,
-        "expected_action": "verify_or_correct_documents",
-        "explanation": "bill_of_lading is missing from the expected upload set."
-      },
-      {
-        "finding_type": "missing_document",
-        "affected_document": "commercial_invoice",
-        "affected_field": null,
-        "expected_action": "verify_or_correct_documents",
-        "explanation": "commercial_invoice is missing from the expected upload set."
-      },
-      {
-        "finding_type": "missing_document",
-        "affected_document": "packing_list",
-        "affected_field": null,
-        "expected_action": "verify_or_correct_documents",
-        "explanation": "packing_list is missing from the expected upload set."
-      },
-      {
-        "finding_type": "missing_document",
-        "affected_document": "dangerous_goods_declaration",
-        "affected_field": null,
-        "expected_action": "verify_or_correct_documents",
-        "explanation": "dangerous_goods_declaration is missing from the expected upload set."
-      }
-    ],
-    "issue_count": 4,
-    "review_recommended": true,
+    "findings": [],
+    "issue_count": 0,
+    "review_recommended": false,
     "qualified_human_review": false,
-    "status": "issues_detected",
+    "status": "no_configured_issues_detected",
     "regulatory_compliance": "not_assessed"
   },
   "review_notes": [

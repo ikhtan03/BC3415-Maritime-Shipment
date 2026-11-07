@@ -1,5 +1,5 @@
 
-"""
+r"""
 PortDoc AI - Shipment Validation Pipeline
 
 Flow:
@@ -28,6 +28,15 @@ if str(BACKEND_DIR) not in sys.path:
 
 from extract_documents import extract_shipment
 from validator import validate
+from verification import reextractor, verify
+from triage import triage
+
+# Regulatory context (RAG): the answer code and corpus live in Backend/rag.
+RAG_DIR = BACKEND_DIR / "rag"
+if str(RAG_DIR) not in sys.path:
+    sys.path.insert(0, str(RAG_DIR))
+from regulatory_context import attach_context  # noqa: E402
+from retrieve import Retriever  # noqa: E402
 
 
 def save_json(file_path, data):
@@ -111,7 +120,25 @@ def main():
 
         # The validator expects document-type -> extracted-fields mapping,
         # not the entire extraction wrapper.
-        validation_result = validate(documents)
+        # Uploaded PDFs, by file name, so a document that was uploaded but not extracted is reported
+        # as an extraction failure rather than a missing document.
+        uploaded_types = {
+            Path(item.get("filename", "")).stem
+            for item in extraction_result.get("upload_inventory", [])
+            if isinstance(item, dict) and item.get("filename")
+        }
+        validation_result = validate(documents, uploaded=uploaded_types)
+
+        # Verification rounds: flagged fields are re-extracted and re-checked, up to two rounds
+        # (the answer keys' verification_expectations).
+        if validation_result.get("findings"):
+            print("\nRe-checking flagged fields...")
+            verified = verify(documents, uploaded_types, reextractor(pdf_folder, extract_shipment))
+            validation_result = verified["validation"]
+            validation_result["verification_rounds"] = verified["rounds"]
+
+        # Triage: a suggested priority and whether a person should review. Recommendation only.
+        validation_result["triage"] = triage(validation_result)
 
         if not isinstance(validation_result, dict):
             raise TypeError(
@@ -164,6 +191,12 @@ def main():
                 ),
             ],
         }
+
+        # Regulatory context: a cited answer for each finding with a regulatory side. Findings and the
+        # compliance status are not changed. A failed model call is recorded on its finding.
+        if report["validation"].get("findings"):
+            print("\nAttaching regulatory context...")
+            report = attach_context(report, Retriever.from_corpus(), documents=documents)
 
         save_json(report_json_path, report)
 
